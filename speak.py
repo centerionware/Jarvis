@@ -5,7 +5,6 @@ parser = argparse.ArgumentParser("python speak.py -i \"Hello World\" -v \"Samant
 parser.add_argument("-v", help="Voice to use", type=str, default="Samantha")
 parser.add_argument("-i", help="Input", type=str)
 args = parser.parse_args()
-#print(args.counter + 1)
 
 def SpeakText(command):
     engine = pyttsx3.init()
