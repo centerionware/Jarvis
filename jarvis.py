@@ -47,7 +47,9 @@ def enqueue_output(out, queue):
     while(1):
         time.sleep(1)
         print("Polling")
-        queue.put(out.readline())
+        for line in iter(out.readline, b''):
+            queue.put(line)
+        #queue.put(out.readline())
         #for line in iter(out.readline, b''):
         #    queue.put(line.decode('utf-8'))
     #out.close()
@@ -74,7 +76,10 @@ class HearingAid:
         if(self.actual_queue.empty()):
             self.hearing_queue = ""
         else:
-            self.hearing_queue = self.actual_queue.get()
+            self.hearing_queue = ""
+            while (not self.actual_queue.empty()):
+                self.hearing_queue += self.actual_queue.get()
+            
         if(booting == 1):
             if( "Listening..." in self.hearing_queue):
                 booting = 0
@@ -100,10 +105,10 @@ def mic_listen(hearing_aid):
     return hearing_aid.hearing_queue
 
 def listen_mode(histogram,hearing_aid):
-    histogram.clear_if_needed(0)
+    #histogram.clear_if_needed(0)
     break_condition = True
     c = 0
-    empty_timeout = "Timeout: No speech detected within the specified time."
+    empty_timeout = ""
     while(break_condition):
         input = mic_listen(hearing_aid)
         if(c > 0):
