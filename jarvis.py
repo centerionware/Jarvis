@@ -8,7 +8,7 @@ r = sr.Recognizer()
 
 url = "http://127.0.0.1:5000/v1/chat/completions"
 
-wake_word = "Hey Jarvis"
+wake_word = "Jarvis"
 
 class StringHistory:
     def __init__(self):
@@ -18,7 +18,7 @@ class StringHistory:
 
     def add_to_string(self, value):
         """Adds value to string1 and resets string2"""
-        print ("Heard: (" + value + ")")
+        #print ("Heard: (" + value + ")")
         self.history += value
         self.current = value
         self._counter += 1
@@ -31,17 +31,11 @@ class StringHistory:
 
     def __str__(self):
         return f"history: {self.history}, current: {self.current}, Counter: {self._counter}"
-import asyncio
+
 import queue
 import threading
 
-# from fcntl import fcntl, F_GETFL, F_SETFL
-# from os import O_NONBLOCK, read
-# flags = fcntl(p.stdout, F_GETFL) # get current p.stdout flags
-# fcntl(p.stdout, F_SETFL, flags | O_NONBLOCK)
-
 booting = 1
-
 
 def enqueue_output(out, queue):
     while(1):
@@ -53,7 +47,7 @@ def enqueue_output(out, queue):
         #for line in iter(out.readline, b''):
         #    queue.put(line.decode('utf-8'))
     #out.close()
-import os
+import os # Not sure if this is still needed.
 
 class HearingAid:
     def __init__(self):
@@ -135,16 +129,15 @@ def record_text(hearing_aid,histogram):
     while(1):
         try:
             histogram.add_to_string( mic_listen(hearing_aid) )
-            if "Hey Jarvis" in histogram.history:
+            if wake_word in histogram.history:
                 if("shut up" in histogram.history):
                     global l_pid
                     try:
                         os.kill(l_pid, signal.SIGTERM)
                     except:
                         print("no process to kill")
-                    return "Shutting up"
-                SpeakText("Yes sir, how may I help?")
-                return listen_mode(histogram,hearing_aid)
+                else:    
+                    return listen_mode(histogram,hearing_aid)
             histogram.clear_if_needed(2)
         except sr.RequestError as e:
                 print("Could not request results; {0}".format(e))
