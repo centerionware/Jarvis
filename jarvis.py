@@ -21,6 +21,20 @@ wake_word = args.w
 
 kill_words = ["shut up","nevermind","never mind","stop","cancel","quit","exit","end","shut it","shut it down","shut down","shut it down"]
 
+import signal
+import sys
+
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C!')
+    global thinking
+    thinking.kill_pids()
+    kill_it(None, None)
+    global aid
+    aid.__del__()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 
 class StringHistory:
     def __init__(self):
@@ -64,8 +78,9 @@ class HearingAid:
         self.hearing_queue = ""
         self.actual_queue = queue.Queue()
     def __del__(self):
+        print("Cleaning HearingAid")
         try:
-            os.kill(self.hearing_pid, signal.SIGTERM)
+            os.kill(self.hearing_pid.pid, signal.SIGTERM)
         except:
             pass
     def launch_hearing(self):
@@ -103,6 +118,7 @@ class ThinkingAid:
         self.actual_queue = queue.Queue()
         self.command = None
     def __del__(self):
+        print("Cleaning ThinkingAid")
         self.kill_pids()
     def launch(self, command):
         global args
@@ -118,7 +134,7 @@ class ThinkingAid:
         for pid in self.pids:
             try:
                 if(pid.poll() is None):
-                    os.kill(pid, signal.SIGTERM)
+                    os.kill(pid.pid, signal.SIGTERM)
             except:
                 pass
         self.pids = []
@@ -182,6 +198,7 @@ def kill_it(histogram,hearing_aid):
 
 class p_watcher():
     def __del__(self):
+        print("Cleaning remaining Speaker if any")
         kill_it(None, None)
 p_watcher_instance = p_watcher()
 
@@ -194,7 +211,7 @@ def listen_mode(histogram,hearing_aid):
     while(break_condition):
         input = mic_listen(hearing_aid, -1)
         for kill_word in kill_words:                    
-            if(kill_word in input):
+            if(kill_word in input.lower()):
                 kill_it(histogram,hearing_aid)
                 raise Exception("Killed")
         print("Input: (" + input + ")"  +str(len(input)) + " " + str(len(histogram.current)))   
@@ -220,10 +237,10 @@ def record_text(hearing_aid,histogram):
     while(1):
         try:
             histogram.add_to_string( mic_listen(hearing_aid,1) )
-            if wake_word in histogram.history:
+            if wake_word.lower() in histogram.history.lower():
                 killed = False
                 for kill_word in kill_words:                    
-                    if(kill_word in histogram.history):
+                    if(kill_word in histogram.history.lower()):
                         killed = True
                         kill_it(histogram,hearing_aid)
                 if(not killed):

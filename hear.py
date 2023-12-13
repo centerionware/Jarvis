@@ -15,10 +15,10 @@ class EnhancedWhisperMic(WhisperMic):
         while True:
             try:
                 result = self.result_queue.get()
-                print(result+"\n", flush=True)
+                print(result, flush=True)
                 sys.stdout.flush()
             except:
                 pass
                 
 mic = EnhancedWhisperMic()
-mic.listen_loop(False,2)
+mic.listen_loop(False,2.8)
