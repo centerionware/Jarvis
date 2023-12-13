@@ -19,12 +19,8 @@ def send_to_oobabooga(args):
     response = requests.post(args.u, headers=headers, json=data, verify=False)
     try:
         reply = response.json()['choices'][0]['message']['content']
-    except:
-        try:
-            reply = response.json()
-        except:
-            reply = "Something went terribly wrong."
-            print(response)
+    except Exception as E:
+        response = "Something went terribly wrong.\n "+str(E)
     return reply
 
 try:
