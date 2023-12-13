@@ -199,14 +199,21 @@ class RetryHandler():
 Retryifier = RetryHandler()
 import webbrowser
 def action_handler(action):
-    list = ["browser-launch", "openurl", "open-browser-url", "open-browser", "open-website", "open-website-url", "browser-open"]
-    for l_action in list: 
-        if l_action in action:
-            try:
-                url = action.split(" ")[1]
-                webbrowser.open(url, new=0, autoraise=True)
-            except Exception as E:
-                webbrowser.open("", new=0, autoraise=True)
+    list = ["browser-launch"]
+    if l_action in action:
+        try:
+            url = action.split(" ")[1]
+            webbrowser.open(url, new=0, autoraise=True)
+        except Exception as E:
+            webbrowser.open("", new=0, autoraise=True)
+    if "spotify" in action:
+        playlist = ""
+        try:
+           playlist = action.split(" ")[1]
+        except:
+           pass
+        SpeakText("I don't know how launch spotify yet")
+        #launch_spotify(playlist) 
     # Perform the desired actions for browser launch
     # ...
 def ParseResponse(response):
