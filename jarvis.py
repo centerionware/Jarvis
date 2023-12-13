@@ -212,7 +212,7 @@ def ParseResponse(response):
             if("action" in final_response["response"]):
                 action = final_response["response"]["action"]
                 print(action)
-        remove_from_retry(response['prompt'])
+        Retryifier.remove_from_retry(response['prompt'])
     except Exception as E:
         Retryifier.try_retry(response['prompt'], str(E))
         print ("exception parsing response: " + str(E))
@@ -264,7 +264,7 @@ def listen_mode(histogram,hearing_aid):
         for kill_word in kill_words:                    
             if(kill_word in input.lower()):
                 kill_it(histogram,hearing_aid)
-                raise Exception("Killed")
+                raise Exception("Killed " + kill_word)
         print("Input: (" + input + ")"  +str(len(input)) + " " + str(len(histogram.current)))   
         if(c > 0):
             if(len(histogram.current) == 0 and len(input) == 0):
