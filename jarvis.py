@@ -165,6 +165,34 @@ def SpeakText(command):
     last_p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', args.v])
     l_pid = last_p.pid
 
+class RetryHandler():
+    def __init__(self):
+        self.retryAid = []
+        return
+    def clear_retries(self):
+        self.retryAid = []
+    def try_retry(self,prompt,error):
+        found = False
+        for i in self.retryAid:
+            if(i[0] in prompt):
+                found = True
+                if(i[1] > 3):
+                    #abort
+                    print("Aborting retries on query")
+                    SpeakText("Aborting retries on query")
+                else:
+                    i[1] = i[1] + 1
+                    self.send_out(prompt, error)
+        if( not found ):
+            self.retryAid.append([prompt,1])
+            self.send_out(prompt, error)
+    def send_out(self, prompt, error):
+        print ("Retryifying")
+        global thinking
+        thinking.launch(prompt + " produced the error (" + error + ")\nplease try again.")
+
+Retryifier = RetryHandler()
+
 def ParseResponse(response):
     response = json.loads(response)
     voice_output = "Jarvis"
@@ -181,6 +209,7 @@ def ParseResponse(response):
                 print(action)
 
     except Exception as E:
+        Retryifier.try_retry(response['prompt'], str(E))
         print ("exception parsing response: " + str(E))
 
 spinner_index = 0
