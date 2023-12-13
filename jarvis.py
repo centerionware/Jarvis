@@ -84,27 +84,82 @@ class HearingAid:
                 SpeakText(wait_text)
         #print("heard: " + self.hearing_queue)
 
+class ThinkingAid:
+    def __init__(self):
+        self.pids = []
+        self.queue = ""
+        self.actual_queue = queue.Queue()
+        self.command = None
 
-headers = {
-    "Content-Type": "application/json"
-}
-l_pid = 0
+    def launch(self, command):
+        global Character
+        global url
+        self.command = command
+        self.pids.append( subprocess.Popen(['python', 'think.py', "-i", command, "-v", Character, "-u", url], stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
+        time.sleep(0.01)
+        self.pids[-1].stdin.write("\n")
+        stdout_thread = threading.Thread(target=enqueue_output, args=(self.pids[-1].stdout, self.actual_queue))
+        stdout_thread.daemon = True
+        stdout_thread.start()
+    def kill_pids(self):
+        for pid in self.pids:
+            try:
+                if(pid.poll() is None):
+                    os.kill(pid, signal.SIGTERM)
+            except:
+                pass
+        self.pids = []
+    def hear(self):
+        if(not self.actual_queue.empty()):
+            while (not self.actual_queue.empty()):
+                self.queue += self.actual_queue.get()
+         
+        for pid in self.pids:
+            if(not (pid.poll() is None)):
+                self.pids.remove(pid)
+
+
+
+l_pid = None
+last_p = None
 def SpeakText(command):
-    p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', 'Samantha'])
+    global last_p
     global l_pid
-    l_pid = p.pid
+    if(last_p and last_p.poll() == None): # make sure only 1 can run at a time.. cancel old ones if it gets to this point, if you want to queue do it before calling here somehow and check for last_p.poll() != None
+        try:
+            os.kill(l_pid, signal.SIGTERM)
+        except:
+            pass
+    last_p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', 'Samantha'])
+    l_pid = last_p.pid
 
+spinner_index = 0
+spinner_list = ["|","/","-","\\"]
 def mic_listen(hearing_aid):
+    global spinner_index
+    global spinner_list
+    print(spinner_list[spinner_index] ,end="\r"),
+    spinner_index = spinner_index + 1
+    if(spinner_index >= len(spinner_list)):
+        spinner_index = 0
     time.sleep(1)
     hearing_aid.hear()
+    global thinking
+    thinking.hear()
+    if( len(thinking.queue) > 0):
+        SpeakText(thinking.queue)
+        print(thinking.queue)
+        thinking.queue = ""
     return hearing_aid.hearing_queue
 
 def kill_it(histogram,hearing_aid):
     global l_pid
+    global thinking    
     try:
         os.kill(l_pid, signal.SIGTERM)
     except:
         print("no process to kill")
+    thinking.kill_pids()
     SpeakText("Confirmed.")
     
 
@@ -160,24 +215,6 @@ def record_text(hearing_aid,histogram):
         except sr.UnknownValueError:
                 print("unknown error occured")
 
-def send_to_oobabooga(messages):
-    global Character
-    data = {
-        "mode": "chat",
-        "character": Character,
-        "messages": messages
-    }
-
-    response = requests.post(url, headers=headers, json=data, verify=False)
-    try:
-        reply = response.json()['choices'][0]['message']['content']
-    except:
-        try:
-            reply = response.json()
-        except:
-            reply = "Something went terribly wrong."
-            print(response)
-    return reply
 
 history = []
 print ("init histogram")
@@ -185,6 +222,8 @@ histogram = StringHistory()
 print ("launch hearing")
 aid = HearingAid()
 aid.launch_hearing()
+print ("launch thinking")
+thinking = ThinkingAid()
 while(1):
     histogram.clear_if_needed(0)
     print ("recording text")
@@ -195,12 +234,13 @@ while(1):
     new_message = {"role": "user", "content": text}
     history.append(new_message)
     try:
-        response = send_to_oobabooga([new_message])
+        thinking.launch(text)
+        #response = send_to_oobabooga([new_message])
     except Exception as E:
         response = "Something went terribly wrong.\n "+str(e)
         print(response)
         
     
-    print ("speaking response")
-    SpeakText(response)
-    print(response)
+    #print ("speaking response")
+    #SpeakText(response)
+    #print(response)

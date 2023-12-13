@@ -14,9 +14,12 @@ class EnhancedWhisperMic(WhisperMic):
         threading.Thread(target=self._WhisperMic__transcribe_forever, daemon=True).start()
         
         while True:
-            result = self.result_queue.get()
-            print(result+"\n", flush=True)
-            sys.stdout.flush()
+            try:
+                result = self.result_queue.get()
+                print(result+"\n", flush=True)
+                sys.stdout.flush()
+            except:
+                pass
                 
 mic = EnhancedWhisperMic()
-mic.listen_loop(False,5)
+mic.listen_loop(False,2)
