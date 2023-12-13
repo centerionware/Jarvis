@@ -151,13 +151,15 @@ def SpeakText(command):
 
 spinner_index = 0
 spinner_list = ["|","/","-","\\"]
-def mic_listen(hearing_aid):
+def mic_listen(hearing_aid, spinamnt):
     global spinner_index
     global spinner_list
     print(spinner_list[spinner_index] ,end="\r"),
-    spinner_index = spinner_index + 1
+    spinner_index = spinner_index + spinamnt
     if(spinner_index >= len(spinner_list)):
         spinner_index = 0
+    if(spinner_index < 0):
+        spinner_index = len(spinner_list)-1
     time.sleep(1)
     hearing_aid.hear()
     global thinking
@@ -190,7 +192,7 @@ def listen_mode(histogram,hearing_aid):
     c = 0
     empty_timeout = ""
     while(break_condition):
-        input = mic_listen(hearing_aid)
+        input = mic_listen(hearing_aid, -1)
         for kill_word in kill_words:                    
             if(kill_word in input):
                 kill_it(histogram,hearing_aid)
@@ -217,7 +219,7 @@ def record_text(hearing_aid,histogram):
     global kill_words
     while(1):
         try:
-            histogram.add_to_string( mic_listen(hearing_aid) )
+            histogram.add_to_string( mic_listen(hearing_aid,1) )
             if wake_word in histogram.history:
                 killed = False
                 for kill_word in kill_words:                    
