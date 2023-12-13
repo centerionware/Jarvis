@@ -4,7 +4,7 @@ import subprocess
 import os
 import signal
 import time
-
+import json
 import argparse
 
 parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
@@ -165,6 +165,24 @@ def SpeakText(command):
     last_p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', args.v])
     l_pid = last_p.pid
 
+def ParseResponse(response):
+    response = json.loads(response)
+    voice_output = "Jarvis"
+    try:
+        final_response = json.loads(response["response"])
+        if("characterName" in final_response):
+            voice_output = final_response["characterName"]
+        if("response" in final_response):
+            if("speech" in final_response["response"]):
+                SpeakText(final_response["response"]["speech"])
+                print("Speaking: " + final_response["response"]["speech"])
+            if("action" in final_response["response"]):
+                action = final_response["response"]["action"]
+                print(action)
+
+    except Exception as E:
+        print ("exception parsing response: " + str(E))
+
 spinner_index = 0
 spinner_list = ["|","/","-","\\"]
 def mic_listen(hearing_aid, spinamnt):
@@ -181,8 +199,7 @@ def mic_listen(hearing_aid, spinamnt):
     global thinking
     thinking.hear()
     if( len(thinking.queue) > 0):
-        SpeakText(thinking.queue)
-        print(thinking.queue)
+        ParseResponse(thinking.queue)
         thinking.queue = ""
     return hearing_aid.hearing_queue
 

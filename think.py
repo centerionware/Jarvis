@@ -1,6 +1,6 @@
 import argparse
 import requests
-
+import json
 parser = argparse.ArgumentParser("python think.py -i \"Hello World\" -v \"Jarvis\"")
 parser.add_argument("-v", help="Voice to use", type=str, default="Jarvis")
 parser.add_argument("-i", help="Input", type=str)
@@ -27,4 +27,4 @@ try:
     response = send_to_oobabooga(args)
 except Exception as E:
     response = "Something went terribly wrong.\n "+str(E)
-print(response, flush=True)
+print(json.dumps({"response":response,"prompt":args.i }), flush=True)
