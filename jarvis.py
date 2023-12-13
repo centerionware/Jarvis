@@ -19,7 +19,7 @@ r = sr.Recognizer()
 
 wake_word = args.w
 
-kill_words = ["shut up","nevermind","never mind","stop","cancel","quit","exit","end","shut it","shut it down","shut down","shut it down"]
+kill_words = ["shut up","nevermind","never mind","shut it","shut it down","shut down","shut it down"]
 
 import signal
 import sys
@@ -294,6 +294,7 @@ def record_text(hearing_aid,histogram):
                     if(kill_word in histogram.history.lower()):
                         killed = True
                         kill_it(histogram,hearing_aid)
+                        print("Killed " + kill_word)
                 if(not killed):
                     try:
                         return listen_mode(histogram,hearing_aid)
