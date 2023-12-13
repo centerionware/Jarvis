@@ -194,7 +194,12 @@ while(1):
     print("create oobabooga request")
     new_message = {"role": "user", "content": text}
     history.append(new_message)
-    response = send_to_oobabooga([new_message])
+    try:
+        response = send_to_oobabooga([new_message])
+    except Exception as E:
+        response = "Something went terribly wrong.\n "+str(e)
+        print(response)
+        
     
     print ("speaking response")
     SpeakText(response)
