@@ -9,6 +9,8 @@ r = sr.Recognizer()
 url = "http://127.0.0.1:5000/v1/chat/completions"
 
 wake_word = "Jarvis"
+kill_words = ["shut up","nevermind","never mind","stop","cancel","quit","exit","end","shut it","shut it down","shut down","shut it down"]
+
 
 class StringHistory:
     def __init__(self):
@@ -43,10 +45,7 @@ def enqueue_output(out, queue):
         print("Polling")
         for line in iter(out.readline, b''):
             queue.put(line)
-        #queue.put(out.readline())
-        #for line in iter(out.readline, b''):
-        #    queue.put(line.decode('utf-8'))
-    #out.close()
+
 import os # Not sure if this is still needed.
 
 class HearingAid:
@@ -94,50 +93,65 @@ def SpeakText(command):
     l_pid = p.pid
 
 def mic_listen(hearing_aid):
-    time.sleep(2)
+    time.sleep(1)
     hearing_aid.hear()
     return hearing_aid.hearing_queue
 
+def kill_it(histogram,hearing_aid):
+    global l_pid
+    try:
+        os.kill(l_pid, signal.SIGTERM)
+    except:
+        print("no process to kill")
+    SpeakText("Confirmed.")
+    
+
 def listen_mode(histogram,hearing_aid):
-    #histogram.clear_if_needed(0)
+    global kill_words;
     break_condition = True
     c = 0
     empty_timeout = ""
     while(break_condition):
         input = mic_listen(hearing_aid)
+        for kill_word in kill_words:                    
+            if(kill_word in input):
+                kill_it(histogram,hearing_aid)
+                raise Exception("Killed")
+        print("Input: (" + input + ")"  +str(len(input)) + " " + str(len(histogram.current)))   
         if(c > 0):
-            if(histogram.current == "" and input == empty_timeout):
+            if(len(histogram.current) == 0 and len(input) == 0):
                 break
-            if(len(histogram.current) > 1 and histogram.current[-1] == "?" and input == empty_timeout):
+            if(len(histogram.current) > 1 and histogram.current[-1] == "?" and len(input) == 0):
                 break
-            if(len(histogram.current) > 1 and histogram.current[-1] == "." and input == empty_timeout):
+            if(len(histogram.current) > 1 and histogram.current[-1] == "." and len(input) == 0):
                 break
-        if(input != empty_timeout):
-            histogram.add_to_string(input)
+        histogram.add_to_string(input)
         c = c+1
-        if(c > 5):
+        if(c > 10):
             break_condition = False
 
     print("You said: " + histogram.history)
+
     return histogram.history
 
 def record_text(hearing_aid,histogram):
     global wake_word
-    #wait_text = "waiting for wake words '"+wake_word+"'"
-    #print (wait_text)
-    #SpeakText(wait_text)
+    global kill_words
     while(1):
         try:
             histogram.add_to_string( mic_listen(hearing_aid) )
             if wake_word in histogram.history:
-                if("shut up" in histogram.history):
-                    global l_pid
+                killed = False
+                for kill_word in kill_words:                    
+                    if(kill_word in histogram.history):
+                        killed = True
+                        kill_it(histogram,hearing_aid)
+                if(not killed):
                     try:
-                        os.kill(l_pid, signal.SIGTERM)
-                    except:
-                        print("no process to kill")
-                else:    
-                    return listen_mode(histogram,hearing_aid)
+                        return listen_mode(histogram,hearing_aid)
+                    except Exception as E:
+                        print (E)
+                        pass
             histogram.clear_if_needed(2)
         except sr.RequestError as e:
                 print("Could not request results; {0}".format(e))
