@@ -4,13 +4,21 @@ import subprocess
 import os
 import signal
 import time
+
+import argparse
+
+parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
+parser.add_argument("-c", help="Oobabooga UI Character to use", type=str, default="Jarvis")
+parser.add_argument("-v", help="Output voice to use", type=str, default="Samantha")
+parser.add_argument("-w", help="Wake word", type=str, default="Jarvis")
+parser.add_argument("-u", help="Url", type=str, default="http://127.0.0.1:5000/v1/chat/completions")
+args = parser.parse_args()
+
+
 r = sr.Recognizer()
 
-url = "http://127.0.0.1:5000/v1/chat/completions"
+wake_word = args.w
 
-Character= "Jarvis" # If you didn't install Jarvis.yaml change this to assistant.
-
-wake_word = "Jarvis"
 kill_words = ["shut up","nevermind","never mind","stop","cancel","quit","exit","end","shut it","shut it down","shut down","shut it down"]
 
 
@@ -55,7 +63,11 @@ class HearingAid:
         self.hearing_pid = 0
         self.hearing_queue = ""
         self.actual_queue = queue.Queue()
-    
+    def __del__(self):
+        try:
+            os.kill(self.hearing_pid, signal.SIGTERM)
+        except:
+            pass
     def launch_hearing(self):
         # stdout=PIPE, stderr=STDOUT, stdin=PIPE,
         self.hearing_pid = subprocess.Popen(['python', 'hear.py'], stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
@@ -90,12 +102,13 @@ class ThinkingAid:
         self.queue = ""
         self.actual_queue = queue.Queue()
         self.command = None
-
+    def __del__(self):
+        self.kill_pids()
     def launch(self, command):
-        global Character
-        global url
+        global args
+        
         self.command = command
-        self.pids.append( subprocess.Popen(['python', 'think.py', "-i", command, "-v", Character, "-u", url], stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
+        self.pids.append( subprocess.Popen(['python', 'think.py', "-i", command, "-v", args.c, "-u", args.u], stderr=subprocess.STDOUT, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
         time.sleep(0.01)
         self.pids[-1].stdin.write("\n")
         stdout_thread = threading.Thread(target=enqueue_output, args=(self.pids[-1].stdout, self.actual_queue))
@@ -122,15 +135,18 @@ class ThinkingAid:
 
 l_pid = None
 last_p = None
+
+
 def SpeakText(command):
     global last_p
     global l_pid
+    global args
     if(last_p and last_p.poll() == None): # make sure only 1 can run at a time.. cancel old ones if it gets to this point, if you want to queue do it before calling here somehow and check for last_p.poll() != None
         try:
             os.kill(l_pid, signal.SIGTERM)
         except:
             pass
-    last_p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', 'Samantha'])
+    last_p = subprocess.Popen(['python', 'speak.py', '-i', command, '-v', args.v])
     l_pid = last_p.pid
 
 spinner_index = 0
@@ -161,7 +177,12 @@ def kill_it(histogram,hearing_aid):
         print("no process to kill")
     thinking.kill_pids()
     SpeakText("Confirmed.")
-    
+
+class p_watcher():
+    def __del__(self):
+        kill_it(None, None)
+p_watcher_instance = p_watcher()
+
 
 def listen_mode(histogram,hearing_aid):
     global kill_words;

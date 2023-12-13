@@ -1,7 +1,6 @@
 from whisper_mic import WhisperMic
 import threading
 import sys
-#mic = WhisperMic()
 
 class EnhancedWhisperMic(WhisperMic):
     def __init__(self):
