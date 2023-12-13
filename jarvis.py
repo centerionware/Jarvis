@@ -197,7 +197,18 @@ class RetryHandler():
         thinking.launch(prompt + " produced the error (" + error + ")\nplease try again.")
 
 Retryifier = RetryHandler()
-
+import webbrowser
+def action_handler(action):
+    list = ["browser-launch", "openurl", "open-browser-url", "open-browser", "open-website", "open-website-url", "browser-open"]
+    for l_action in list: 
+        if l_action in action:
+            try:
+                url = action.split(" ")[1]
+                webbrowser.open(url, new=0, autoraise=True)
+            except Exception as E:
+                webbrowser.open("", new=0, autoraise=True)
+    # Perform the desired actions for browser launch
+    # ...
 def ParseResponse(response):
     response = json.loads(response)
     voice_output = "Jarvis"
@@ -211,6 +222,7 @@ def ParseResponse(response):
                 print("Speaking: " + final_response["response"]["speech"])
             if("action" in final_response["response"]):
                 action = final_response["response"]["action"]
+                action_handler(action)
                 print(action)
         Retryifier.remove_from_retry(response['prompt'])
     except Exception as E:
