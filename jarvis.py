@@ -8,6 +8,8 @@ r = sr.Recognizer()
 
 url = "http://127.0.0.1:5000/v1/chat/completions"
 
+Character= "Jarvis" # If you didn't install Jarvis.yaml change this to assistant.
+
 wake_word = "Jarvis"
 kill_words = ["shut up","nevermind","never mind","stop","cancel","quit","exit","end","shut it","shut it down","shut down","shut it down"]
 
@@ -159,9 +161,10 @@ def record_text(hearing_aid,histogram):
                 print("unknown error occured")
 
 def send_to_oobabooga(messages):
+    global Character
     data = {
         "mode": "chat",
-        "character": "Assistant",
+        "character": Character,
         "messages": messages
     }
 
@@ -189,6 +192,7 @@ while(1):
     histogram.clear_if_needed(0)
     
     print("create oobabooga request")
+    SpeakText("Let me think about that..")
     history.append({"role": "user", "content": text})
     response = send_to_oobabooga(history)
     
