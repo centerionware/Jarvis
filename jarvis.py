@@ -199,8 +199,7 @@ class RetryHandler():
 Retryifier = RetryHandler()
 import webbrowser
 def action_handler(action):
-    list = ["browser-launch"]
-    if l_action in action:
+    if "browser-launch" in action:
         try:
             url = action.split(" ")[1]
             webbrowser.open(url, new=0, autoraise=True)
