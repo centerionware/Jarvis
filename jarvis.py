@@ -186,6 +186,11 @@ class RetryHandler():
         if( not found ):
             self.retryAid.append([prompt,1])
             self.send_out(prompt, error)
+    def remove_from_retry(self, prompt):
+        for i in self.retryAid:
+            if(i[0] in prompt):
+                self.retryAid.remove(i)
+                return
     def send_out(self, prompt, error):
         print ("Retryifying")
         global thinking
@@ -207,7 +212,7 @@ def ParseResponse(response):
             if("action" in final_response["response"]):
                 action = final_response["response"]["action"]
                 print(action)
-
+        remove_from_retry(response['prompt'])
     except Exception as E:
         Retryifier.try_retry(response['prompt'], str(E))
         print ("exception parsing response: " + str(E))
