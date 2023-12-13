@@ -192,9 +192,9 @@ while(1):
     histogram.clear_if_needed(0)
     
     print("create oobabooga request")
-    SpeakText("Let me think about that..")
-    history.append({"role": "user", "content": text})
-    response = send_to_oobabooga(history)
+    new_message = {"role": "user", "content": text}
+    history.append(new_message)
+    response = send_to_oobabooga([new_message])
     
     print ("speaking response")
     SpeakText(response)

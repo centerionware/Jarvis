@@ -19,4 +19,4 @@ class EnhancedWhisperMic(WhisperMic):
             sys.stdout.flush()
                 
 mic = EnhancedWhisperMic()
-mic.listen_loop(False,2)
+mic.listen_loop(False,5)
