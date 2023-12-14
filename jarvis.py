@@ -6,6 +6,7 @@ import signal
 import time
 import json
 import argparse
+import AppOpener
 
 parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
 parser.add_argument("-c", help="Oobabooga UI Character to use", type=str, default="Jarvis")
@@ -148,6 +149,14 @@ class ThinkingAid:
                 self.pids.remove(pid)
 
 
+class AppAid():
+    def __init__(self):
+        self.apps = AppOpener.give_appnames()
+    def try_open_app(self, app_name):
+        #if(app_name.lower() in self.apps):
+        AppOpener.open(app_name, match_closest = True)
+        
+        
 
 l_pid = None
 last_p = None
@@ -205,16 +214,14 @@ def action_handler(action):
             webbrowser.open(url, new=0, autoraise=True)
         except Exception as E:
             webbrowser.open("", new=0, autoraise=True)
-    if "spotify" in action:
-        playlist = ""
+    if "open-app" in action:
+        app_name = ""
         try:
-           playlist = action.split(" ")[1]
+           app_name = action.split(" ")[1]
         except:
            pass
-        SpeakText("I don't know how launch spotify yet")
-        #launch_spotify(playlist) 
-    # Perform the desired actions for browser launch
-    # ...
+        AppOpener.open(app_name, match_closest = True)
+    
 def ParseResponse(response):
     response = json.loads(response)
     voice_output = "Jarvis"
