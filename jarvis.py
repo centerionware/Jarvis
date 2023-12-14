@@ -155,12 +155,9 @@ class AppAid():
     def try_open_app(self, app_name):
         #if(app_name.lower() in self.apps):
         AppOpener.open(app_name, match_closest = True)
-        
-        
 
 l_pid = None
 last_p = None
-
 
 def SpeakText(command):
     global last_p
@@ -281,7 +278,7 @@ p_watcher_instance = p_watcher()
 
 
 def listen_mode(histogram,hearing_aid):
-    global kill_words;
+    global kill_words
     break_condition = True
     c = 0
     empty_timeout = ""
