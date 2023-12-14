@@ -354,7 +354,7 @@ while(1):
         thinking.launch(text)
         #response = send_to_oobabooga([new_message])
     except Exception as E:
-        response = "Something went terribly wrong.\n "+str(e)
+        response = "Something went terribly wrong.\n "+str(E)
         print(response)
         
     
