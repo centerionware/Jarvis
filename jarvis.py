@@ -258,6 +258,7 @@ def mic_listen(hearing_aid, spinamnt):
     global thinking
     thinking.hear()
     if( len(thinking.queue) > 0):
+        print("Heard back from the AI Chatbot: " + thinking.queue)
         ParseResponse(thinking.queue)
         thinking.queue = ""
     return hearing_aid.hearing_queue
@@ -315,6 +316,7 @@ def record_text(hearing_aid,histogram):
             histogram.add_to_string( mic_listen(hearing_aid,1) )
             if wake_word.lower() in histogram.history.lower():
                 killed = False
+                print("Awakening to " + histogram.history)
                 for kill_word in kill_words:                    
                     if(kill_word in histogram.history.lower()):
                         killed = True
@@ -326,6 +328,7 @@ def record_text(hearing_aid,histogram):
                     except Exception as E:
                         print (E)
                         pass
+                
             histogram.clear_if_needed(2)
         except sr.RequestError as e:
                 print("Could not request results; {0}".format(e))
