@@ -15,7 +15,7 @@ build_container:
     - if: $DESTROY == null
       when: always
   image: docker:24.0
-  
+  when: manual
   stage: build_container
   tags:
     - Build
