@@ -17,7 +17,7 @@ Created in collaboration between Deadcode and Its_MS
 * conda_file - a file containing a conda command to install pytorch with cuda 12.1 for nvidia platforms
 * pip_file - WHL cuda alternative to the conda_file using pip instead to be run inside an already existing venv
 * requirements.txt - contains some requirements, can be run with pip install -r requirements.txt
-* Dockerfile - builds a basic docker container containing all this, runs but does not work on WSL(or any) due to various reasons (alsa not available, and whisper_mic's keyboard input simulation dependencies require X/Xorg/Wayland )
+* Dockerfile - builds a basic docker container containing all this, runs but does not work on WSL(or any) due to various reasons (alsa not available, and whisper_mic's keyboard input simulation dependencies require X/Xorg/Wayland ) ** The dockerfile references invalid packages and is broken and will be left that way in the main branch.
 * Jarvis_character_creator_data.txt - instructions on reproducing Jarvis.json with updated data to better customize the responses to allow more or better or different actions to be responded with by the ai
 * startup/default.sh - Used by Docker to launch jarvis.py
 * .gitlab-ci.yml - Gitlab CICD file that builds docker images, stores them in gitlab registry, and can deploy them on properly setup runners with some api calls or setting a bunch of variables properly in the cicd launching page
