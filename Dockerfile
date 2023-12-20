@@ -1,4 +1,4 @@
-FROM registry.gitlab.centerionware.com:443/release-paradigm/ip6ingress-connector:latest
+FROM registry.gitlab.centerionware.com:443/release-paradigm/compose-container:latest
 
 WORKDIR /app
 
