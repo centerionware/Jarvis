@@ -3,7 +3,7 @@ COPY . /app/
 
 run chmod +x /app/start_script.sh && chmod +x /app/cron_script.sh
 run apt update && apt-cache search linux-headers
-RUN apt update && apt install -y docker docker-compose nfs-common supervisor bash git gcc linux-headers-amd64 && rm  -rf /tmp/* && apt-get clean
+RUN apt update && apt install -y docker docker-compose nfs-common supervisor bash git gcc linux-headers-amd64 python3-pyaudio && rm  -rf /tmp/* && apt-get clean
 
 RUN mkdir -p /var/log/supervisor
 
