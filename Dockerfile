@@ -2,7 +2,7 @@ FROM python:3.9-slim
 COPY . /app/
 
 run chmod +x /app/start_script.sh && chmod +x /app/cron_script.sh
-RUN apt update && apt install -y docker docker-compose nfs-common supervisor bash git && rm  -rf /tmp/* && apt-get clean
+RUN apt update && apt install -y docker docker-compose nfs-common supervisor bash git gcc linux-headers-$(uname -r) && rm  -rf /tmp/* && apt-get clean
 
 RUN mkdir -p /var/log/supervisor
 
