@@ -2,6 +2,15 @@
 
 Created in collaboration between Deadcode and Its_MS
 
+This will create a discord bot that connects, can join discord channels and receive and send DMS, as well as join voice channels..
+In the discord version hear and speak should be done together, and will need to sample audio in through whisper ourselves.
+
+* Begin by adding a basic discord bot file that connects, use environment variable DISCORD_TOKEN to set the token. This is temporarily set for development as a cicd variable in gitlab, later it needs to be passed in via API call for final deployments.
+* Then figure out how to get it to connect to voice channels, and then get it to sample the audio in, then pass that to whisper (fastwhisper?) in a sane way.
+* of course the next step is to take the response, and get that back to jarvis to be sent to think.py
+* And finally TTS can for a quick shortcut be done via discord TTS. Later we need to find something that can generate audio, maybe an AI. 
+
+
 
 **Main Files:**
 * jarvis.py - The main jarvis application, it spawns hear, think, and see
@@ -28,6 +37,5 @@ Created in collaboration between Deadcode and Its_MS
  The main branch will be left as this, and new branches should be made to do things like migrate hear and speak (and text output) to third party middlewares such as discord.
 
 ## Launching:
- download the files, install the requirements in a venv with pytorch set up for your system, run jarvis.py
- _Do not_ try to use the docker image except for development. It will not run properly and I have no plans to fix it. The docker images are for future builds without whisper_mic and pyttsx3 using alsa (in/out with discord for ex.)
+ docker run -d --name Jarvis -e DISCORD_TOKEN=....... --gpus all registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot
 
