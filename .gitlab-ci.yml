@@ -1,0 +1,141 @@
+variables:
+  GENERATED_KEY: ""
+
+stages:
+  - build_container
+  - deploy_container
+  - uninstall_container
+
+build_container:
+  rules:
+    - if: $UNINSTALL != null
+      when: never
+    - if: $project_name != null
+      when: never
+    - if: $DESTROY == null
+      when: always
+  image: docker:24.0
+  
+  stage: build_container
+  tags:
+    - Build
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - echo "The current project id number is $CI_PROJECT_ID"
+    - docker build --output type=docker -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker system prune -a -f || true
+    - docker builder prune -a -f || true
+
+deploy_container:
+  image: docker:24.0
+  stage: deploy_container
+  rules:
+    - if: $UNINSTALL != null
+      when: never
+    - if: $project_name != null
+      when: always
+  tags:
+      - Deploy
+      - $project_name-PROJECT_RUNNER
+  before_script:
+    - sh ParseForCICD.sh $CI_PROJECT_NAME $CI_PROJECT_ID
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker exec -it $CI_PROJECT_NAME docker compose --file /app/docker-compose.yml down || true
+    - docker stop $CI_PROJECT_NAME || true
+    - docker rm $CI_PROJECT_NAME || true
+    - docker rmi $CI_REGISTRY_IMAGE:latest --force || true
+    - docker pull $CI_REGISTRY_IMAGE:latest
+    - docker logout $CI_REGISTRY
+    - docker volume create --driver local 
+      --opt type=nfs4
+      --opt o=addr=ingress-nfs-server.centerionware.lan,nfsvers=4,rw,nolock,soft 
+      --opt device=ingress-nfs-server.centerionware.lan:/ 
+      $CI_PROJECT_NAME-ingress-volume || true
+  script:
+    - apk add jq
+    - |
+      env_file="env"
+      # Parse the JSON data from the 'body' variable and write to the .env file
+      echo "# Auto-generated .env file" > "$env_file"
+      # Iterate over key-value pairs and write them to the .env file
+      for key in $(echo "$body" | jq -r 'keys[] | gsub(" "; "_")'); do
+        value=$(echo "$body" | jq -r ".$key")
+        value=$(echo "$value" | sed "s/\"/\\\"/g")
+        # Write the key-value pair to the .env file
+        echo "$key=$value" >> "$env_file"
+      done
+      
+      echo "APP_URL=https://$(echo "$CI_PROJECT_NAME").$(echo "$project_name").$(echo "$domain")" >> "$env_file"
+      echo "PROJECT_NAME=$(echo "$CI_PROJECT_NAME" | sed 's/"/\\"/g')" >> "$env_file"
+      echo "VM_ID=$(echo "$project_name" | sed 's/"/\\"/g')" >> "$env_file"
+      echo "DOMAIN=$(echo "$domain" | sed 's/"/\\"/g')" >> "$env_file"
+      
+      # Print the final .env file
+      cat "$env_file"
+    - docker run --name $CI_PROJECT_NAME -d 
+      --restart always 
+      --env-file env
+      -v /mnt/:/mnt
+      -v $CI_PROJECT_NAME-ingress-volume:/ingress
+      -v /var/run/docker.sock:/var/run/docker.sock
+      -v /var/run/docker_host_pipe:/var/run/docker_host_pipe
+      -v /var/run/docker_host_results:/var/run/docker_host_results
+      -v /lib/modules:/lib/modules
+      $CI_REGISTRY_IMAGE:latest
+    - docker system prune -f || true
+    - docker image prune -f || true
+#       -l traefik.enable=true
+#       -l "traefik.http.routers.dashboard.rule=Host(\`$CI_PROJECT_NAME.$project_name.$domain\`)"
+#       -l traefik.http.routers.dashboard.entrypoints=web
+#       -l traefik.http.services.dashboard.loadbalancer.server.scheme=http
+#       -l traefik.http.services.dashboard.loadbalancer.server.port=5000
+#       -l "traefik.http.routers.dashboard-ws.rule=PathPrefix(\`/socket.io\`) && Host(\`$CI_PROJECT_NAME.$project_name.$domain\`)"
+#       -l traefik.http.routers.dashboard-ws.middlewares=websocket-upgrade
+#       -l traefik.http.middlewares.websocket-upgrade.headers.customRequestHeaders.Upgrade=websocket
+#       -l traefik.http.middlewares.websocket-upgrade.headers.customRequestHeaders.Connection=Upgrade
+#       -l traefik.http.middlewares.websocket-upgrade.headers.customRequestHeaders.X-Forwarded-Proto=https,wss
+      
+
+uninstall_container:
+  image: docker:24.0
+  stage: uninstall_container
+  rules:
+    - if: $UNINSTALL != null
+      when: always
+    - if: $UNINSTALL == null
+      when: never
+  tags:
+      - Deploy
+      - $project_name-PROJECT_RUNNER
+  script:
+    # ParseForCICD.sh script can be used to prepare for uninstall if needed
+    - sh ParseForCICD.sh $CI_PROJECT_NAME $CI_PROJECT_ID
+
+    # Find the file within the /app directory
+    - FILENAME_TO_DELETE=$(docker exec $CI_PROJECT_NAME find /app -name "*-instance-template.yml" -type f -exec basename {} \;)
+
+    # If the file is found, delete it from /ingress
+    - if [ -n "$FILENAME_TO_DELETE" ]; then
+        docker exec $CI_PROJECT_NAME rm "/ingress/$FILENAME_TO_DELETE" ;
+      fi
+
+    # Stop and remove the containers
+    # - docker network disconnect podman traefik-guac || true ### This breaks things worse damnit. uninstall and reinstall ends with bad gateway till restart with podman attaching networks the way I am. hell even `docker compose down && docker compose up -d` needs a reboot.. it's the worst.
+    - docker exec $CI_PROJECT_NAME docker compose --file /app/docker-compose.yml down || true
+    - docker stop $CI_PROJECT_NAME || true
+    - docker rm $CI_PROJECT_NAME || true
+
+    # Delete the Docker image
+    - docker rmi $CI_REGISTRY_IMAGE:latest --force || true
+
+    # Optionally, delete other resources (e.g., data volumes)
+    - docker run -v /mnt:/mnt alpine:latest rm -r /mnt/$CI_PROJECT_NAME || true
+
+    # Prune unused Docker resources
+    - docker system prune -af || true
+    #- docker volume prune -f || true # When finished developing uncomment this to make uninstaller remove data
+    
+    
