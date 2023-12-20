@@ -1,26 +1,7 @@
-FROM python:3.9-slim
-COPY . /app/
-
-run chmod +x /app/start_script.sh && chmod +x /app/cron_script.sh
-run apt update && apt-cache search linux-headers
-RUN apt update && apt install -y docker docker-compose nfs-common supervisor bash git gcc linux-headers-amd64 python3-pyaudio && rm  -rf /tmp/* && apt-get clean
-
-RUN mkdir -p /var/log/supervisor
-
-COPY docker-entrypoint.sh /usr/bin/docker-entrypoint.sh
-RUN chmod +x /usr/bin/docker-entrypoint.sh
-
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
-
+FROM registry.gitlab.centerionware.com:443/public-projects/jarvis:python3.9-cuda-torch-torchvision-pyaudio
 
 WORKDIR /app
-
-# Copy the current directory contents into the container at /app
-
-# RUN apk add py3-pip 
-#RUN git clone https://github.com/openai/triton.git --branch v2.1.0 && cd triton && pip install ninja cmake wheel && pip install -e python
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 
-# Make port 8080 available to the world outside this container
-
+ort 8080 available to the world outside this container
+run pip install -r /app/requirements.txt
 # Run app.py when the container launches
 #CMD ["python3", "app.py"]
