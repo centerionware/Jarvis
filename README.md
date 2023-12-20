@@ -37,5 +37,15 @@ In the discord version hear and speak should be done together, and will need to 
  The main branch will be left as this, and new branches should be made to do things like migrate hear and speak (and text output) to third party middlewares such as discord.
 
 ## Launching:
- docker run -d --name Jarvis -e DISCORD_TOKEN=....... --gpus all registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot
+```sh
+ docker login registry.gitlab.centerionware.com
+ docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot
+```
+## Live container development
+```sh
+docker exec -it jarvis bash
+apt install nano
+nano whateverfile
+python whateverfile.py
+```
 
