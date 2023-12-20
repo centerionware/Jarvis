@@ -13,7 +13,7 @@ build_container:
     - if: $project_name != null
       when: never
     - if: $DESTROY == null
-      when: always
+      when: manual
   image: docker:24.0
   when: manual
   stage: build_container
