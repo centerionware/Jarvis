@@ -27,6 +27,7 @@ import queue
 import threading
 
 booting = 1
+client_user = None
 
 def enqueue_output(out, queue, interaction,pid):
     #while(1):
@@ -48,9 +49,23 @@ class ThinkingAid:
         self.kill_pids()
     def dl_and_enc_image(self, url):
         pass
-    def launch(self, command, url, interaction):
+    def launch(self, command, url, interaction, old_messages):
+        global client_user
         self.command = command
         args = {}
+        
+        formatted_messages = []
+        for message in old_messages:
+            if(message.author == client_user):
+                content = message.content
+                #remove the first line of content
+                content = content[content.find("\n")+1:]
+                formatted_messages.append({"role": "assistant", "content": content})
+                print("adding assistant message: " + content)
+            else:
+                print("adding user message: " + message.content)
+                formatted_messages.append({"role": "user", "content": message.content})
+            
         if(url is not False):
             args = {
                 "model": "llava",
@@ -74,7 +89,10 @@ class ThinkingAid:
                     }
                 ]
             }
-
+        #loop each message in formatted_messages but in reverse
+        for message in formatted_messages[::-1]:
+            #Push message to the front of the list
+            args["messages"].insert(0,message)
         # url http://localhost:11434/api/generate -d
         self.pids.append( subprocess.Popen(['curl', 'http://localhost:11434/api/chat', "-d", json.dumps(args)], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
         time.sleep(0.01)
@@ -131,16 +149,16 @@ async def hear():
             result = elem[0]
             if(result == ""):
                 continue
-            print("Result: " + str(result) + " " +str( type(result)))
+            #print("Result: " + str(result) + " " +str( type(result)))
             try:
                 result = json.loads(result)
-                print("Loaded json")
+                #print("Loaded json")
                 response = result["message"]["content"]
-                print("Extracted response" + response)
+                #print("Extracted response" + response)
                 model = result["model"]
-                print("Extracted model" + model)
+                #print("Extracted model" + model)
                 formatted_response = "Model: " + model + "\n" + response
-                print("Sending result: " + formatted_response)
+                #print("Sending result: " + formatted_response)
                 await send_result(elem[1],formatted_response)
             except Exception as e:
                 print("Error parsing result "  + str(e))
@@ -152,8 +170,10 @@ async def hear():
 
 @client.event
 async def on_ready():
+    global client_user
     await tree.sync()
     hear.start()
+    client_user = client.user
     print(f'We have logged in as {client.user}')
 
 @client.event
@@ -162,7 +182,8 @@ async def on_message(message):
         return
     if message.content.startswith('$'):
         has_image = get_url_from_message(message)
-        thinking.launch(message.content, has_image, message)
+        old_messages = [message async for message in message.channel.history(limit=10)]
+        thinking.launch(message.content, has_image, message, old_messages)
         await message.channel.send('Hello!')
 
 @tree.command(name = "echo", description = "echo back all text")
@@ -209,7 +230,8 @@ async def ask(interaction,*, arg:str, ):
     #print(interaction.data)
     
     #has_image = get_url_from_message(interaction.message)
-    thinking.launch(arguments, False, interaction)
+    old_messages = [message async for message in interaction.channel.history(limit=10)]
+    thinking.launch(arguments, False, interaction, old_messages)
     await interaction.response.defer(thinking=True)
     #result = "Thinking..."
     #send_result(result)
