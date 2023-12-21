@@ -28,12 +28,13 @@ import threading
 
 booting = 1
 
-def enqueue_output(out, queue, interaction):
+def enqueue_output(out, queue, interaction,pid):
     #while(1):
     time.sleep(1)
     print("Polling")
-    for line in iter(out.readline, b''):
-        queue.put([line,interaction])
+    output, err = pid.communicate()
+    queue.put([output,interaction])
+    pid.terminate()
 
 
 class ThinkingAid:
@@ -78,7 +79,7 @@ class ThinkingAid:
         self.pids.append( subprocess.Popen(['curl', 'http://localhost:11434/api/chat', "-d", json.dumps(args)], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
         time.sleep(0.01)
         self.pids[-1].stdin.write("\n")
-        stdout_thread = threading.Thread(target=enqueue_output, args=(self.pids[-1].stdout, self.actual_queue, interaction))
+        stdout_thread = threading.Thread(target=enqueue_output, args=(self.pids[-1].stdout, self.actual_queue, interaction, self.pids[-1]))
         stdout_thread.daemon = True
         stdout_thread.start()
 
@@ -92,10 +93,12 @@ class ThinkingAid:
         self.pids = []
 
     def hear(self):
-        if(not self.actual_queue.empty()):
-            while (not self.actual_queue.empty()):
-                self.queue.append(self.actual_queue.get())
-         
+        try:
+            if(not self.actual_queue.empty()):
+                while (not self.actual_queue.empty()):
+                    self.queue.append(self.actual_queue.get(block=False))
+        except Exception as e:
+            pass
         for pid in self.pids:
             if(not (pid.poll() is None)):
                 self.pids.remove(pid)
