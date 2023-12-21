@@ -10,7 +10,7 @@ else
     echo "File /app/fix_env already exists."
 fi
 
-python /app/jarvis.py
+python /app/discord_hear.py
 
 mkdir /mnt/jarvis || true
 cp /app/etc /mnt/jarvis/ -r
