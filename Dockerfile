@@ -1,4 +1,4 @@
-FROM registry.gitlab.centerionware.com:443/public-projects/jarvis:python3.9-cuda-torch-torchvision-pyaudio
+FROM registry.gitlab.centerionware.com:443/public-projects/jarvis:python3.9-docker-git-gcc-pyaudio-notorch
 
 WORKDIR /app
 run apt install -y portaudio19-dev libffi-dev libnacl-dev python3-dev libsndfile1-dev 
