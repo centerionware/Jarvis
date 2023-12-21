@@ -189,7 +189,10 @@ async def send_result(interaction, arguments):
     if(type(interaction) is discord.Interaction):
         print("Sending interaction msg with " + str(len(messages)) + " messages")
         for message in messages:
-            await interaction.followup.send(message)
+            # Trim the message, if it's not empty send it
+
+            if(len(message.strip()) > 0):
+                await interaction.followup.send(message)
     elif(type(interaction) is discord.Message):
         for message in messages:
             await interaction.channel.send(message)
