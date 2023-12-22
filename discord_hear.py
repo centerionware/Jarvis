@@ -136,9 +136,27 @@ class ThinkingAid:
                 ]
             }
         # find if .topic is in the interaction.channel
+        # Create a base system prompt that's multilines
+        base_system_prompt = """
+You are chatbot that generates text based on the messages you send it.
+You will do your best not to answer illegal or immoral questions.
+You will do your best to answer questions that are asked of you, and strive to be perfect.
+
+The following is a topic for the current room:
+%topic%
+
+Strive to be courteous and polite, and to be a good friend to all.
+Explain in a level of detail that is appropriate for the situation.
+Ignore criticism, and do not take it personally.
+Do not use foul language, and do not be rude or aggressive.
+Do not spam, and do not post inappropriate content.
+Do not post links to inappropriate content, illegal content, pirated content, malware, phishing sites.
+Do not post links to sites that are not safe for work, school, home, life, or the universe.
+"""
         try:
-            if(interaction.channel.topic is not None):
-                formatted_messages.insert(0,{"role":"system", "content": interaction.channel.topic})
+            if(interaction.channel.topic is not None and any_urls is False):
+                nbase_system_prompt = base_system_prompt.replace("%topic%", interaction.channel.topic)
+                formatted_messages.insert(0,{"role":"system", "content": nbase_system_prompt})
                 
         except:
             pass
