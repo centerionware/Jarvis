@@ -135,6 +135,13 @@ class ThinkingAid:
                     }
                 ]
             }
+        # find if .topic is in the interaction.channel
+        try:
+            if(interaction.channel.topic is not None):
+                formatted_messages.insert(0,{"role":"system", "content": interaction.channel.topic})
+                
+        except:
+            pass
         if(any_urls is True):
             #print("A url is true!")
             #print(json.dumps(args))
@@ -233,7 +240,7 @@ async def on_message(message):
         return
     if message.content.startswith('$'):
         has_image = get_url_from_message(message)
-        old_messages = [message async for message in message.channel.history(limit=10, oldest_first=False)]
+        old_messages = [messageo async for messageo in message.channel.history(limit=10, oldest_first=False)]
         thinking.launch(message.content, has_image, message, old_messages)
         #await message.channel.send('Thinking...')
 
