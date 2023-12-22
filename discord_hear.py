@@ -8,7 +8,8 @@ import time
 import signal
 import sys
 import subprocess
-
+import requests
+import base64
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
@@ -29,18 +30,34 @@ import threading
 booting = 1
 client_user = None
 
-def enqueue_output(out, queue, interaction,pid):
-    #while(1):
-    time.sleep(1)
-    print("Polling")
-    output, err = pid.communicate()
+def enqueue_output(queue, interaction, args):
+    if(args["model"] == "llava"):
+        new_args = {
+            "model": args["model"],
+            "stream": args["stream"],
+            #Make a string out of all the messages roles and contents to fill the prompt
+            "prompt": "",
+            # fill in the images from the messages that have them
+            "images": []
+        }
+        for message in args["messages"]:
+            if(message["role"] != "assistant"):
+                content = message["content"]
+                if(content[0] == "$"): content = content[1:]
+                new_args["prompt"] +=  content + "\n"
+            if("images" in message):
+                for image in message["images"]:
+                    new_args["images"].append(image)
+        output = requests.post("http://localhost:11434/api/generate", json=new_args).content.decode('utf-8')
+        print("Received output from llava: " + str(output))
+        queue.put([output,interaction])
+        return
+    output = requests.post("http://localhost:11434/api/chat", json=args).content.decode('utf-8')
     queue.put([output,interaction])
-    pid.terminate()
 
 
 class ThinkingAid:
     def __init__(self):
-        self.pids = []
         self.queue = []
         self.actual_queue = queue.Queue()
         self.command = None
@@ -48,25 +65,54 @@ class ThinkingAid:
         print("Cleaning ThinkingAid")
         self.kill_pids()
     def dl_and_enc_image(self, url):
-        pass
+        #download the url using requests into memory
+        #encode the image into base64
+        #return the base64 encoded image
+        image = requests.get(url).content
+        return base64.b64encode(image).decode('utf-8')
+    def look_for_forget_in_messages(self, old_messages):
+        new_messages = []
+        for message in old_messages:#[::-1]:
+            if(message.author != client_user):
+                if(message.content == "forget"):
+                    return new_messages
+            if(message.content.strip() != ""):
+                new_messages.append(message)
+        return new_messages
     def launch(self, command, url, interaction, old_messages):
         global client_user
+        old_messages = self.look_for_forget_in_messages(old_messages)
         self.command = command
         args = {}
         
         formatted_messages = []
+        any_urls = False
         for message in old_messages:
             if(message.author == client_user):
                 content = message.content
                 #remove the first line of content
                 content = content[content.find("\n")+1:]
-                formatted_messages.append({"role": "assistant", "content": content})
+                has_url = get_url_from_message(message)
+                if has_url is not False:
+                    any_urls = True
+                    content += "\nThis contains a picture/image/photograph of some sort\n"
+                    formatted_messages.append({"role": "assistant", "content": content, "images":[self.dl_and_enc_image(has_url)]})
+                else:
+                    formatted_messages.append({"role": "assistant", "content": content})
                 print("adding assistant message: " + content)
             else:
                 print("adding user message: " + message.content)
-                formatted_messages.append({"role": "user", "content": message.content})
+                has_url = get_url_from_message(message)
+                if has_url is not False:
+                    any_urls = True
+                    content = message.content
+                    content += "\nThis contains a picture/image/photograph of some sort\n"
+                    formatted_messages.append({"role": "user", "content": content, "images":[self.dl_and_enc_image(has_url)]})
+                else:
+                    formatted_messages.append({"role": "user", "content": message.content})
             
         if(url is not False):
+            any_urls = True
             args = {
                 "model": "llava",
                 "stream": False,
@@ -89,26 +135,29 @@ class ThinkingAid:
                     }
                 ]
             }
+        if(any_urls is True):
+            #print("A url is true!")
+            #print(json.dumps(args))
+            args["model"] = "llava"
+        else:
+            args["model"] = "mistral"            
         #loop each message in formatted_messages but in reverse
         for message in formatted_messages[::-1]:
             #Push message to the front of the list
             args["messages"].insert(0,message)
         # url http://localhost:11434/api/generate -d
-        self.pids.append( subprocess.Popen(['curl', 'http://localhost:11434/api/chat', "-d", json.dumps(args)], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True))
+        if(any_urls is True):
+            print("A url is true!")
+            print(json.dumps(args))
+        
         time.sleep(0.01)
-        self.pids[-1].stdin.write("\n")
-        stdout_thread = threading.Thread(target=enqueue_output, args=(self.pids[-1].stdout, self.actual_queue, interaction, self.pids[-1]))
+        # self.pids[-1].stdin.write("\n")
+        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args))
         stdout_thread.daemon = True
         stdout_thread.start()
 
     def kill_pids(self):
-        for pid in self.pids:
-            try:
-                if(pid.poll() is None):
-                    os.kill(pid.pid, signal.SIGTERM)
-            except:
-                pass
-        self.pids = []
+        pass
 
     def hear(self):
         try:
@@ -117,9 +166,7 @@ class ThinkingAid:
                     self.queue.append(self.actual_queue.get(block=False))
         except Exception as e:
             pass
-        for pid in self.pids:
-            if(not (pid.poll() is None)):
-                self.pids.remove(pid)
+        
 
 thinking = ThinkingAid()
 
@@ -153,7 +200,11 @@ async def hear():
             try:
                 result = json.loads(result)
                 #print("Loaded json")
-                response = result["message"]["content"]
+                response = ""
+                if("message" not in result):
+                    response = result["response"]
+                else:
+                    response = result["message"]["content"]
                 #print("Extracted response" + response)
                 model = result["model"]
                 #print("Extracted model" + model)
@@ -182,9 +233,9 @@ async def on_message(message):
         return
     if message.content.startswith('$'):
         has_image = get_url_from_message(message)
-        old_messages = [message async for message in message.channel.history(limit=10)]
+        old_messages = [message async for message in message.channel.history(limit=10, oldest_first=False)]
         thinking.launch(message.content, has_image, message, old_messages)
-        await message.channel.send('Hello!')
+        #await message.channel.send('Thinking...')
 
 @tree.command(name = "echo", description = "echo back all text")
 async def echo(interaction,*, arg:str, ):
@@ -230,7 +281,7 @@ async def ask(interaction,*, arg:str, ):
     #print(interaction.data)
     
     #has_image = get_url_from_message(interaction.message)
-    old_messages = [message async for message in interaction.channel.history(limit=10)]
+    old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     thinking.launch(arguments, False, interaction, old_messages)
     await interaction.response.defer(thinking=True)
     #result = "Thinking..."
