@@ -292,7 +292,8 @@ async def send_result(interaction, arguments):
                 await interaction.followup.send(message)
     elif(type(interaction) is discord.Message):
         for message in messages:
-            await interaction.channel.send(message)
+            if(len(message.strip()) > 0):
+                await interaction.channel.send(message)
     else:
         print("Unknown interaction type")
             
