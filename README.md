@@ -36,8 +36,16 @@ Baseline Echo bot
 ```
 ## Adding ollama-webui
 ```sh
- docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=https://jarvis/api --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
+ docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=http://jarvis:11434/api --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
 ```
+Note: You must create a network and add both jarvis and the webui so they can see each other:
+```sh
+docker network create -d bridge my-bridge-network
+docker network connect my-bridge-network ollama-webui
+docker network connect my-bridge-network jarvis
+```
+After creating the network, access the webui at localhost:3000
+
 ## Live container development
 ```sh
 docker exec -it jarvis bash
