@@ -29,11 +29,26 @@ Baseline Echo bot
  This is a very basic testing implimentation to see if it's even possible. Turns out it works okay, not great though due to the latency with Whisper and Whisper_mic.
  The main branch will be left as this, and new branches should be made to do things like migrate hear and speak (and text output) to third party middlewares such as discord.
 
+ The python bot utilizes the mistral and llava llm's, which are not pre-installed by default. Use of the WebUI to install them is recommended. Be sure to use proper security standards, don't expose your webui publicly, all that.
+ 
+
 ## Launching:
 ```sh
  docker login registry.gitlab.centerionware.com
- docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot
+ docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all -p 8080: -v /mnt/jarvis:/usr/share/ollama/.ollama/models registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-webui
 ```
+## Adding ollama-webui
+```sh
+ docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=http://jarvis:11434/api --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
+```
+Note: You must create a network and add both jarvis and the webui so they can see each other:
+```sh
+docker network create -d bridge my-bridge-network
+docker network connect my-bridge-network ollama-webui
+docker network connect my-bridge-network jarvis
+```
+After creating the network, access the webui at localhost:3000
+
 ## Live container development
 ```sh
 docker exec -it jarvis bash
