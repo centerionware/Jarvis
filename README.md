@@ -32,7 +32,11 @@ Baseline Echo bot
 ## Launching:
 ```sh
  docker login registry.gitlab.centerionware.com
- docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot
+ docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all -p 8080: -v /mnt/jarvis:/usr/share/ollama/.ollama/models registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-webui
+```
+## Adding ollama-webui
+```sh
+ docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=https://jarvis/api --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
 ```
 ## Live container development
 ```sh
