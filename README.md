@@ -30,12 +30,12 @@ Baseline Echo bot
  The main branch will be left as this, and new branches should be made to do things like migrate hear and speak (and text output) to third party middlewares such as discord.
 
  The python bot utilizes the mistral and llava llm's, which are not pre-installed by default. Use of the WebUI to install them is recommended. Be sure to use proper security standards, don't expose your webui publicly, all that.
- 
+
 
 ## Launching:
 ```sh
  docker login registry.gitlab.centerionware.com
- docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all -p 8080: -v /mnt/jarvis:/usr/share/ollama/.ollama/models registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-webui
+ docker run -d --name jarvis -e DISCORD_TOKEN=....... --gpus all -p 8080: -v /mnt/jarvis:/usr/share/ollama/.ollama/models registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
 ```
 ## Adding ollama-webui
 ```sh
