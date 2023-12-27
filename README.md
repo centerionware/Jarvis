@@ -35,8 +35,10 @@ Baseline Echo bot
 ## Launching:
 ```sh
  docker login registry.gitlab.centerionware.com
-docker run --name jarvis -d --gpus all -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
+docker run --name jarvis -d --gpus all -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
 ```
+LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
+
 ## Adding ollama-webui
 ```sh
  docker run -d -p 3000:8080 -e OLLAMA_API_BASE_URL=http://jarvis:11434/api --name ollama-webui --restart always ghcr.io/ollama-webui/ollama-webui:main
