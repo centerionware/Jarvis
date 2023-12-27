@@ -1,3 +1,5 @@
 requests
 discord.py[voice]
 litellm
+orjson
+proxy
