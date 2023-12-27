@@ -1,3 +1,48 @@
+import subprocess
+import queue
+import threading
+import time
+import requests
+import base64
+import json
+import os
+
+def enqueue_output(queue, interaction, args):
+    if(args["model"] == "llava"):
+        new_args = {
+            "model": args["model"],
+            "stream": args["stream"],
+            #Make a string out of all the messages roles and contents to fill the prompt
+            "prompt": "",
+            # fill in the images from the messages that have them
+            "images": []
+        }
+        for message in args["messages"]:
+            if(message["role"] != "assistant"):
+                content = message["content"]
+                if(content[0] == "$"): content = content[1:]
+                new_args["prompt"] +=  content + "\n"
+            if("images" in message):
+                for image in message["images"]:
+                    new_args["images"].append(image)
+        output = requests.post("http://localhost:11434/api/generate", json=new_args).content.decode('utf-8')
+        print("Received output from llava: " + str(output))
+        queue.put([output,interaction])
+        return
+    output = requests.post("http://localhost:11434/api/chat", json=args).content.decode('utf-8')
+    queue.put([output,interaction])
+
+
+def get_url_from_message(message):
+    if len(message.attachments) > 0:
+        attachment = message.attachments[0]
+    else:
+        return False
+    if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
+        return attachment.url
+    elif "https://images-ext-1.discordapp.net" in message.content or "https://tenor.com/view/" in message.content:
+        return message.content
+
 class ThinkingAid:
     def __init__(self, client):
         self.queue = []
@@ -16,7 +61,7 @@ class ThinkingAid:
     def look_for_forget_in_messages(self, old_messages):
         new_messages = []
         for message in old_messages:#[::-1]:
-            if(message.author != client_user):
+            if(message.author != self.client.user):
                 if(message.content == "forget"):
                     return new_messages
             if(message.content.strip() != ""):

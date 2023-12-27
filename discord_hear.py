@@ -2,14 +2,9 @@
 from discord.ext import tasks
 import discord
 import os
-import textwrap
 import json
-import time
-import signal
 import sys
-import subprocess
-import requests
-import base64
+import thinking_aid
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
@@ -24,41 +19,9 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
 
-import queue
-import threading
 
 booting = 1
 client_user = None
-
-def enqueue_output(queue, interaction, args):
-    if(args["model"] == "llava"):
-        new_args = {
-            "model": args["model"],
-            "stream": args["stream"],
-            #Make a string out of all the messages roles and contents to fill the prompt
-            "prompt": "",
-            # fill in the images from the messages that have them
-            "images": []
-        }
-        for message in args["messages"]:
-            if(message["role"] != "assistant"):
-                content = message["content"]
-                if(content[0] == "$"): content = content[1:]
-                new_args["prompt"] +=  content + "\n"
-            if("images" in message):
-                for image in message["images"]:
-                    new_args["images"].append(image)
-        output = requests.post("http://localhost:11434/api/generate", json=new_args).content.decode('utf-8')
-        print("Received output from llava: " + str(output))
-        queue.put([output,interaction])
-        return
-    output = requests.post("http://localhost:11434/api/chat", json=args).content.decode('utf-8')
-    queue.put([output,interaction])
-
-
-
-        
-
 
 spinner_index = 0
 spinner_list = ["|","/","-","\\"]
@@ -122,7 +85,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     if message.content.startswith('$'):
-        has_image = get_url_from_message(message)
+        has_image = thinking_aid.get_url_from_message(message)
         old_messages = [messageo async for messageo in message.channel.history(limit=10, oldest_first=False)]
         thinking.launch(message.content, has_image, message, old_messages)
         #await message.channel.send('Thinking...')
@@ -179,16 +142,7 @@ async def ask(interaction,*, arg:str, ):
     #send_result(result)
 
 
-def get_url_from_message(message):
-    if len(message.attachments) > 0:
-        attachment = message.attachments[0]
-    else:
-        return False
-    if attachment.filename.endswith(".jpg") or attachment.filename.endswith(".jpeg") or attachment.filename.endswith(".png") or attachment.filename.endswith(".webp") or attachment.filename.endswith(".gif"):
-        return attachment.url
-    elif "https://images-ext-1.discordapp.net" in message.content or "https://tenor.com/view/" in message.content:
-        return message.content
 
-import thinking_aid
+
 thinking = thinking_aid.ThinkingAid(client)
 client.run(os.environ["DISCORD_TOKEN"])
