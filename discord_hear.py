@@ -58,8 +58,7 @@ def enqueue_output(queue, interaction, args):
 
 
         
-import thinking_aid
-thinking = ThinkingAid()
+
 
 spinner_index = 0
 spinner_list = ["|","/","-","\\"]
@@ -190,5 +189,6 @@ def get_url_from_message(message):
     elif "https://images-ext-1.discordapp.net" in message.content or "https://tenor.com/view/" in message.content:
         return message.content
 
-
+import thinking_aid
+thinking = thinking_aid.ThinkingAid(client)
 client.run(os.environ["DISCORD_TOKEN"])
