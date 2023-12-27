@@ -35,9 +35,10 @@ Baseline Echo bot
 ## Launching:
 ```sh
  docker login registry.gitlab.centerionware.com
-docker run --name jarvis -d --gpus all -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
+docker run --name jarvis -d --gpus all -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
 ```
 LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
+ComfyUI should be available on port 8188, it also is insecure. 
 
 ## Adding ollama-webui
 ```sh
