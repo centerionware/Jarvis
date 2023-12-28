@@ -12,13 +12,11 @@ def signal_handler(sig, frame):
     thinking.kill_pids()
     sys.exit(0)
 
-
 intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
 tree = discord.app_commands.CommandTree(client)
-
 
 booting = 1
 client_user = None
