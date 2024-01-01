@@ -3,3 +3,4 @@ discord.py[voice]
 litellm[proxy]
 orjson
 proxy
+websocket
