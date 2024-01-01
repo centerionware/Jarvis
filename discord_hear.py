@@ -8,13 +8,14 @@ import thinking_aid
 import drawing_aid
 #import argparse
 import io
+import logging
 
 # parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
 # parser.add_argument("-u", help="Url", type=str, default="http://localhost:11434/api/generate")
 # parser.add_argument("-igu", help="ComfyUI Url", type=str, default="localhost:8188")
 # args = parser.parse_args()
 comfyui_url = "localhost:8188"
-ollama_url = "localhost:11434/api/generate"
+ollama_url = "http://localhost:11434/api/generate"
 try:
     comfyui_url = os.environ["COMFYUI_URL"]
 except:
@@ -30,7 +31,7 @@ print("Ollam URL: " + ollama_url)
 
 
 def signal_handler(sig, frame):
-    print('You pressed Ctrl+C!')
+    print('Signal handler called, exiting.')
     global thinking
     thinking.kill_pids()
     sys.exit(0)
@@ -66,9 +67,12 @@ async def hear():
     spinner()
     if( len(drawing.queue) > 0):
         for elem in drawing.queue:
-            for image_node in elem[0]:
-                for image_data in elem[image_node]:
-                    send_image_result(elem[1], image_data)
+            nodes = elem[0]        
+            for image in nodes:
+                for image_data in nodes[image]:
+                    print("Sending an image result.")
+                    await send_image_result(elem[1], image_data)
+                    
                     #From here we need to upload the image to discord.. assume it'll be a png. might need to fix the template.json to have a save node.
 
             # for node_id in images:
@@ -76,6 +80,7 @@ async def hear():
             #         from PIL import Image
             #         import io
             #         image = Image.open(io.BytesIO(image_data))
+        drawing.queue = []
             #         image.show()
     if( len(thinking.queue) > 0):
         #print("Heard back from the AI Chatbot: " + thinking.queue)
@@ -101,7 +106,7 @@ async def hear():
                 #print("Sending result: " + formatted_response)
                 await send_result(elem[1],formatted_response)
             except Exception as e:
-                print("Error parsing result "  + str(e))
+                logging.warning("Error parsing result "  + str(e))
                 #try:
                     #await send_result(elem[1],str(e))
                 #except Exception as e2:
@@ -134,11 +139,11 @@ async def echo(interaction,*, arg:str, ):
 
 async def send_image_result(interaction, image_data):
     print ("Sending image result: " + str(len(image_data)))
-    messages = []
     if(type(interaction) is discord.Interaction):
-        await interaction.followup.send(discord.File(io.BytesIO(image_data), filename="image.png"))
+        #await interaction.followup.send("Here's an image result")
+        await interaction.followup.send(file=discord.File(io.BytesIO(image_data), "image.png"))
     elif(type(interaction) is discord.Message):
-        await interaction.channel.send(discord.File(io.BytesIO(image_data), filename="image.png"))
+        await interaction.channel.send(file=discord.File(io.BytesIO(image_data), "image.png"))
 
 async def send_result(interaction, arguments):
     print ("Sending result: " + arguments)
@@ -166,38 +171,27 @@ async def send_result(interaction, arguments):
             if(len(message.strip()) > 0):
                 await interaction.channel.send(message)
     else:
-        print("Unknown interaction type")
+        logging.warning("Unknown interaction type")
             
         
 
 @tree.command(name = "ask", description = "Ask Jarvis a question")
-async def ask(interaction,*, arg:str, ):
+async def ask(interaction,*, question:str, ):
     global thinking
-    arguments = arg
+    arguments = question
     print("Message received: " + arguments)
-    #print(interaction.data)
-    
-    #has_image = get_url_from_message(interaction.message)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     thinking.launch(arguments, False, interaction, old_messages)
     await interaction.response.defer(thinking=True)
-    #result = "Thinking..."
-    #send_result(result)
 
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")
-async def image(interaction,*, arg:str, ):
+async def image(interaction,*, description:str, negative_prompt:str = "" ):
     global thinking
-    arguments = arg
+    arguments = description
     print("Message received: " + arguments)
-    #print(interaction.data)
-    #has_image = get_url_from_message(interaction.message)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    drawing.launch(arguments, interaction, old_messages)
+    drawing.launch(arguments, interaction, old_messages, negative_prompt)
     await interaction.response.defer(thinking=True)
-    #result = "Thinking..."
-    #send_result(result)
-
-
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)

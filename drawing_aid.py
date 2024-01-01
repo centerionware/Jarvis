@@ -7,10 +7,13 @@ import base64
 import json
 import os
 import comfyui_api
+import logging
 
 def enqueue_output(queue, interaction, url, prompt):
     client = comfyui_api.Client(url)
+    print("Sending prompt to comfyui")
     output = client.get_images(client.ws, prompt)
+    print("Received output from comfyui") # + json.dumps(output))
     queue.put([output,interaction])
 
 
@@ -22,7 +25,7 @@ class DrawingAid:
         self.client=client
         self.url = url
         # read self.file from sdxl-turbo-template.json
-        self.file = json.load(open("sdxl-turbo-template.json"))
+        self.prompt = json.load(open("sdxl-turbo-template.json"))
 
     def __del__(self):
         print("Cleaning ThinkingAid")
@@ -34,15 +37,18 @@ class DrawingAid:
         image = requests.get(url).content
         return base64.b64encode(image).decode('utf-8')
     
-    def launch(self, command,  interaction, old_messages):
+    def launch(self, command,  interaction, old_messages, negative_prompt=""):
         client_user = self.client
         # Copy self.prompt, go through it and modify %prompt% to be the "command" argument
-        client_prompt = self.prompt.copy()
+        client_prompt = json.loads(json.dumps(self.prompt))
         for node in client_prompt:
-            if("inputs" in client_prompt[node] and "text" in client_prompt[node]["inputs"]):
-                client_prompt[node]["inputs"]["text"] = client_prompt[node]["inputs"]["text"].replace("%prompt%", command)
-           
-        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))
+            if "text" in client_prompt[node]["inputs"] and client_prompt[node]["inputs"]["text"] == "%prompt%":
+                client_prompt[node]["inputs"]["text"] = command
+                print("Set comfyui prompt")
+            if "text" in client_prompt[node]["inputs"] and client_prompt[node]["inputs"]["text"] == "%negative_prompt%":
+                client_prompt[node]["inputs"]["text"] = negative_prompt
+                print("Set comfyui negative_prompt")
+        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))#json.loads(client_prompt)))
         stdout_thread.daemon = True
         stdout_thread.start()
 

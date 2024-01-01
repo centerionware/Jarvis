@@ -29,7 +29,8 @@ def enqueue_output(queue, interaction, args, remote_url):
         print("Received output from llava: " + str(output))
         queue.put([output,interaction])
         return
-    output = requests.post(remote_url, json=args).content.decode('utf-8')
+    output = requests.post(remote_url.replace("generate", "chat"), json=args).content.decode('utf-8')
+    print("received output from mistral")
     queue.put([output,interaction])
 
 

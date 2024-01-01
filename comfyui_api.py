@@ -7,16 +7,25 @@ import json
 import urllib.request
 import urllib.parse
 
+
+
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, uuid.UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return obj.hex
+        return json.JSONEncoder.default(self, obj)
 class Client:
     def __init__(self, server_address="127.0.0.1:8188", client_id=uuid.uuid4()):
-        self.client_id = client_id
+        #self.client_id = client_id
         self.server_address = server_address
         self.ws = websocket.WebSocket()
+        self.client_id = str(client_id)
         self.ws.connect("ws://{}/ws?clientId={}".format(self.server_address, self.client_id))
     
     def queue_prompt(self, prompt):
         p = {"prompt": prompt, "client_id": self.client_id}
-        data = json.dumps(p).encode('utf-8')
+        data = json.dumps(p, cls=UUIDEncoder).encode('utf-8')
         req =  urllib.request.Request("http://{}/prompt".format(self.server_address), data=data)
         return json.loads(urllib.request.urlopen(req).read())
 
@@ -32,16 +41,21 @@ class Client:
 
     def get_images(self, ws, prompt):
         prompt_id = self.queue_prompt(prompt)['prompt_id']
+        
+        # self.client_id = prompt_id
         output_images = {}
         while True:
             out = ws.recv()
             if isinstance(out, str):
+                print("Received WS message: " + out)
                 message = json.loads(out)
                 if message['type'] == 'executing':
                     data = message['data']
                     if data['node'] is None and data['prompt_id'] == prompt_id:
                         break #Execution is done
             else:
+                # print (json.dumps(out, indent=4))
+                print("Reveived binary data, probably a preview")
                 continue #previews are binary data
 
         history = self.get_history(prompt_id)[prompt_id]
