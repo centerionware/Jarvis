@@ -3,10 +3,9 @@ Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
 # 0xJarvis
 * Ollama is running in WSL in docker with LiteLLM (Currently not used) with Jarvis (the discord.py based bot) on RX3080 with an AMD 2700x cpu on windows 11.
-* ComfyUI is based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui workflows to work on AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image as ages.)
+* ComfyUI runs based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui to work on legacy AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image is ages.) 
 
 **New Main File:**
-
 * discord_hear.py - provides basic discord echo bot.
 * comfyui_api.py - Provides connectivity to comfyui's api. 
 * thinking_aid.py - provides connectivity to ollama's api
