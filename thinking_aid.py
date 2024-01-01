@@ -7,7 +7,7 @@ import base64
 import json
 import os
 
-def enqueue_output(queue, interaction, args):
+def enqueue_output(queue, interaction, args, remote_url):
     if(args["model"] == "llava"):
         new_args = {
             "model": args["model"],
@@ -25,11 +25,11 @@ def enqueue_output(queue, interaction, args):
             if("images" in message):
                 for image in message["images"]:
                     new_args["images"].append(image)
-        output = requests.post("http://localhost:11434/api/generate", json=new_args).content.decode('utf-8')
+        output = requests.post(remote_url, json=new_args).content.decode('utf-8')
         print("Received output from llava: " + str(output))
         queue.put([output,interaction])
         return
-    output = requests.post("http://localhost:11434/api/chat", json=args).content.decode('utf-8')
+    output = requests.post(remote_url, json=args).content.decode('utf-8')
     queue.put([output,interaction])
 
 
@@ -44,11 +44,12 @@ def get_url_from_message(message):
         return message.content
 
 class ThinkingAid:
-    def __init__(self, client):
+    def __init__(self, client, url):
         self.queue = []
         self.actual_queue = queue.Queue()
         self.command = None
         self.client=client
+        self.url = url
     def __del__(self):
         print("Cleaning ThinkingAid")
         self.kill_pids()
@@ -165,7 +166,7 @@ Do not post links to sites that are not safe for work, school, home, life, or th
         
         time.sleep(0.01)
         # self.pids[-1].stdin.write("\n")
-        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args))
+        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args, self.url))
         stdout_thread.daemon = True
         stdout_thread.start()
 

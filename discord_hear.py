@@ -5,6 +5,29 @@ import os
 import json
 import sys
 import thinking_aid
+import drawing_aid
+#import argparse
+import io
+
+# parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
+# parser.add_argument("-u", help="Url", type=str, default="http://localhost:11434/api/generate")
+# parser.add_argument("-igu", help="ComfyUI Url", type=str, default="localhost:8188")
+# args = parser.parse_args()
+comfyui_url = "localhost:8188"
+ollama_url = "localhost:11434/api/generate"
+try:
+    comfyui_url = os.environ["COMFYUI_URL"]
+except:
+    pass
+print("ComfyUI URL: " + comfyui_url)
+
+try:
+    ollama_url = os.environ["OLLAMA_URL"]
+except:
+    pass
+print("Ollam URL: " + ollama_url)
+
+
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
@@ -37,8 +60,23 @@ def spinner(spinamnt=1):
 @tasks.loop(seconds=1.0)
 async def hear():
     global thinking
+    global drawing
+    drawing.hear()
     thinking.hear()
     spinner()
+    if( len(drawing.queue) > 0):
+        for elem in drawing.queue:
+            for image_node in elem[0]:
+                for image_data in elem[image_node]:
+                    send_image_result(elem[1], image_data)
+                    #From here we need to upload the image to discord.. assume it'll be a png. might need to fix the template.json to have a save node.
+
+            # for node_id in images:
+            #     for image_data in images[node_id]:
+            #         from PIL import Image
+            #         import io
+            #         image = Image.open(io.BytesIO(image_data))
+            #         image.show()
     if( len(thinking.queue) > 0):
         #print("Heard back from the AI Chatbot: " + thinking.queue)
         #ParseResponse(thinking.queue)
@@ -94,6 +132,14 @@ async def echo(interaction,*, arg:str, ):
     print("Message received: " + arguments)
     send_result(interaction, arguments)
 
+async def send_image_result(interaction, image_data):
+    print ("Sending image result: " + str(len(image_data)))
+    messages = []
+    if(type(interaction) is discord.Interaction):
+        await interaction.followup.send(discord.File(io.BytesIO(image_data), filename="image.png"))
+    elif(type(interaction) is discord.Message):
+        await interaction.channel.send(discord.File(io.BytesIO(image_data), filename="image.png"))
+
 async def send_result(interaction, arguments):
     print ("Sending result: " + arguments)
     messages = []
@@ -113,7 +159,6 @@ async def send_result(interaction, arguments):
         print("Sending interaction msg with " + str(len(messages)) + " messages")
         for message in messages:
             # Trim the message, if it's not empty send it
-
             if(len(message.strip()) > 0):
                 await interaction.followup.send(message)
     elif(type(interaction) is discord.Message):
@@ -139,8 +184,22 @@ async def ask(interaction,*, arg:str, ):
     #result = "Thinking..."
     #send_result(result)
 
+@tree.command(name = "image", description = "Prompt Jarvis to create an image")
+async def image(interaction,*, arg:str, ):
+    global thinking
+    arguments = arg
+    print("Message received: " + arguments)
+    #print(interaction.data)
+    #has_image = get_url_from_message(interaction.message)
+    old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
+    drawing.launch(arguments, interaction, old_messages)
+    await interaction.response.defer(thinking=True)
+    #result = "Thinking..."
+    #send_result(result)
 
 
 
-thinking = thinking_aid.ThinkingAid(client)
+thinking = thinking_aid.ThinkingAid(client, ollama_url)
+drawing = drawing_aid.DrawingAid(client, comfyui_url)
+
 client.run(os.environ["DISCORD_TOKEN"])
