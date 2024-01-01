@@ -1,41 +1,35 @@
 # Jarvis
+Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
-Baseline Echo bot
+# 0xJarvis
+* Ollama is running in WSL in docker with LiteLLM (Currently not used) with Jarvis (the discord.py based bot) on RX3080 with an AMD 2700x cpu on windows 11.
+* ComfyUI is based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui workflows to work on AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image as ages.)
 
-** New Main File:**
+**New Main File:**
+
 * discord_hear.py - provides basic discord echo bot.
-
-**Old Main Files:**
-* jarvis.py - The main jarvis application, it spawns hear, think, and see
-* Jarvis.json - The character file for jarvis used in oobabooga to get it to respond with a predictable json format
-
-**Modules:**
-* hear.py - Extremely basic hearing module using whisper_mic, requires direct OS access
-* speak.py - Extremely basic speaking module using pyttsx3
-* think.py - Basic requests module that makes a request and prints the response
-
-**Extra Files:**
-* Jarvis.yaml - character file for oobabooga's webui to be finetuned for best responses.
-* conda_file - a file containing a conda command to install pytorch with cuda 12.1 for nvidia platforms
-* pip_file - WHL cuda alternative to the conda_file using pip instead to be run inside an already existing venv
-* requirements.txt - contains some requirements, can be run with pip install -r requirements.txt
-* Dockerfile - builds a basic docker container containing all this, runs but does not work on WSL(or any) due to various reasons (alsa not available, and whisper_mic's keyboard input simulation dependencies require X/Xorg/Wayland ) ** The dockerfile references invalid packages and is broken and will be left that way in the main branch.
-* Jarvis_character_creator_data.txt - instructions on reproducing Jarvis.json with updated data to better customize the responses to allow more or better or different actions to be responded with by the ai
-* startup/default.sh - Used by Docker to launch jarvis.py
-* .gitlab-ci.yml - Gitlab CICD file that builds docker images, stores them in gitlab registry, and can deploy them on properly setup runners with some api calls or setting a bunch of variables properly in the cicd launching page
-
+* comfyui_api.py - Provides connectivity to comfyui's api. 
+* thinking_aid.py - provides connectivity to ollama's api
+* drawing_aid.py - provides a wrapper around comfyui that's the same syntax as thinking_aid so discord_hear.py can use similar notation
+* sdxl-turbo-template.json - An SDXL workflow exported from comfyui in API mode (settings/enable dev mode options), use %prompt% to add a prompt and %negative_prompt% to add a negative prompt. Currently the image saved is the one comfyui_api.py responds with, future plan is to use previews and not store on the server
+* requirements.txt - requirements
+* startup/default.sh - run by base image and used to copy data if needed, in this project i believe it launches discord_hear.py
+* supervisord/*.conf - init files, base image builds into /etc/supervisord.conf from all the files in this folder
 
 ## Notes:
- This is a very basic testing implimentation to see if it's even possible. Turns out it works okay, not great though due to the latency with Whisper and Whisper_mic.
- The main branch will be left as this, and new branches should be made to do things like migrate hear and speak (and text output) to third party middlewares such as discord.
+ By default comfyui is not enabled. to enable it create your own comfyui.conf file, copy the contents of comfyui.conf into it, and change autostart to 1. Mount this new conf file over comfyui.conf in your `docker run ... registry.gitlab.centerionware.com/public-projects/jarvis/drawing-jarvis` command.
+ You will need a lot of vram to effectively use both comfyui and ollama on the same gpu. My guess is 16GB might work okay, 24GB to be safe.
 
- The python bot utilizes the mistral and llava llm's, which are not pre-installed by default. Use of the WebUI to install them is recommended. Be sure to use proper security standards, don't expose your webui publicly, all that.
+## Environment Variables and defaults
 
+* COMFYUI_URL = "localhost:8188"
+* OLLAMA_URL = "http://localhost:11434/api/generate"
 
-## Launching:
+## Launching example:
+Be sure to change the ip or hostname to the host running comfyui
 ```sh
  docker login registry.gitlab.centerionware.com
-docker run --name jarvis -d --gpus all -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:discord-bot-pythondev
+docker run --name jarvis -d --gpus all -e COMFYUI_URL='192.168.1.1:8188' -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:drawing-jarvis
 ```
 LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
 ComfyUI should be available on port 8188, it also is insecure. 
@@ -59,4 +53,3 @@ apt install nano
 nano whateverfile
 python whateverfile.py
 ```
-
