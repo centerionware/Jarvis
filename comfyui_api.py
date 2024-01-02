@@ -20,7 +20,7 @@ class Client:
         #self.client_id = client_id
         self.server_address = server_address
         self.ws = websocket.WebSocket()
-        self.client_id = str(client_id)
+        self.client_id = str(uuid.uuid4())
         self.ws.connect("ws://{}/ws?clientId={}".format(self.server_address, self.client_id))
     
     def queue_prompt(self, prompt):
@@ -47,7 +47,7 @@ class Client:
         while True:
             out = ws.recv()
             if isinstance(out, str):
-                print("Received WS message: " + out)
+                print("("+self.client_id+")Received WS message: " + out)
                 message = json.loads(out)
                 if message['type'] == 'executing':
                     data = message['data']

@@ -37,7 +37,7 @@ class DrawingAid:
         image = requests.get(url).content
         return base64.b64encode(image).decode('utf-8')
     
-    def launch(self, command,  interaction, old_messages, negative_prompt=""):
+    def launch(self, command,  interaction, old_messages, negative_prompt="", noise_seed=10301411218912, cfg=1.0):
         client_user = self.client
         # Copy self.prompt, go through it and modify %prompt% to be the "command" argument
         client_prompt = json.loads(json.dumps(self.prompt))
@@ -48,6 +48,13 @@ class DrawingAid:
             if "text" in client_prompt[node]["inputs"] and client_prompt[node]["inputs"]["text"] == "%negative_prompt%":
                 client_prompt[node]["inputs"]["text"] = negative_prompt
                 print("Set comfyui negative_prompt")
+            if "noise_seed" in client_prompt[node]["inputs"]:
+                client_prompt[node]["inputs"]["noise_seed"] = noise_seed
+                print("Set comfyui noise_seed")
+            if "cfg" in client_prompt[node]["inputs"]:
+                client_prompt[node]["inputs"]["cfg"] = cfg
+                print("Set comfyui cfg")
+            #10301411218912
         stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))#json.loads(client_prompt)))
         stdout_thread.daemon = True
         stdout_thread.start()

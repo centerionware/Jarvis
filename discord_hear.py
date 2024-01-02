@@ -131,12 +131,6 @@ async def on_message(message):
         thinking.launch(message.content, has_image, message, old_messages)
         #await message.channel.send('Thinking...')
 
-@tree.command(name = "echo", description = "echo back all text")
-async def echo(interaction,*, arg:str, ):
-    arguments = arg
-    print("Message received: " + arguments)
-    send_result(interaction, arguments)
-
 async def send_image_result(interaction, image_data):
     print ("Sending image result: " + str(len(image_data)))
     if(type(interaction) is discord.Interaction):
@@ -185,12 +179,15 @@ async def ask(interaction,*, question:str, ):
     await interaction.response.defer(thinking=True)
 
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")
-async def image(interaction,*, description:str, negative_prompt:str = "" ):
+async def image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1):
     global thinking
+    if(image_count > 5):
+        image_count = 5
     arguments = description
     print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    drawing.launch(arguments, interaction, old_messages, negative_prompt)
+    for i in range(image_count):
+        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg)
     await interaction.response.defer(thinking=True)
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
