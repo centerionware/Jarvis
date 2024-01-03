@@ -22,7 +22,10 @@ class Client:
         self.ws = websocket.WebSocket()
         self.client_id = str(uuid.uuid4())
         self.ws.connect("ws://{}/ws?clientId={}".format(self.server_address, self.client_id))
-    
+    #Cleanup, close the websocket
+    def __del__(self):
+        if self.ws and self.ws.connected:
+            self.ws.close()
     def queue_prompt(self, prompt):
         p = {"prompt": prompt, "client_id": self.client_id}
         data = json.dumps(p, cls=UUIDEncoder).encode('utf-8')

@@ -169,13 +169,13 @@ async def send_result(interaction, arguments):
             
         
 
-@tree.command(name = "ask", description = "Ask Jarvis a question")
+@tree.command(name = "ask", description = "Ask Jarvis a question", model="auto")
 async def ask(interaction,*, question:str, ):
     global thinking
     arguments = question
     print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    thinking.launch(arguments, False, interaction, old_messages)
+    thinking.launch(arguments, False, interaction, old_messages, model)
     await interaction.response.defer(thinking=True)
 
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")

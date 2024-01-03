@@ -69,7 +69,7 @@ class ThinkingAid:
             if(message.content.strip() != ""):
                 new_messages.append(message)
         return new_messages
-    def launch(self, command, url, interaction, old_messages):
+    def launch(self, command, url, interaction, old_messages, model):
         client_user = self.client
         old_messages = self.look_for_forget_in_messages(old_messages)
         self.command = command
@@ -101,7 +101,7 @@ class ThinkingAid:
                 else:
                     formatted_messages.append({"role": "user", "content": message.content})
             
-        if(url is not False):
+        if(url is not False and (model is "auto" or model is "llava")):
             any_urls = True
             args = {
                 "model": "llava",
@@ -115,8 +115,11 @@ class ThinkingAid:
                 ]
             }
         else:
+            s_model = "mistral"
+            if( s_model is not "auto"):
+                s_model = model
             args ={
-                "model": "mistral",
+                "model": s_model,
                 "stream": False,
                 "messages": [
                     {
