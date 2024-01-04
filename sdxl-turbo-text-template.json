@@ -3,7 +3,7 @@
     "inputs": {
       "width": 512,
       "height": 512,
-      "batch_size": 1
+      "batch_size": 4
     },
     "class_type": "EmptyLatentImage",
     "_meta": {
@@ -14,7 +14,7 @@
     "inputs": {
       "text": "%prompt%",
       "clip": [
-        "20",
+        "38",
         1
       ]
     },
@@ -25,9 +25,9 @@
   },
   "7": {
     "inputs": {
-      "text": "%negative_prompt%",
+      "text": "",
       "clip": [
-        "20",
+        "38",
         1
       ]
     },
@@ -39,7 +39,7 @@
   "8": {
     "inputs": {
       "samples": [
-        "13",
+        "40",
         0
       ],
       "vae": [
@@ -50,41 +50,6 @@
     "class_type": "VAEDecode",
     "_meta": {
       "title": "VAE Decode"
-    }
-  },
-  "13": {
-    "inputs": {
-      "add_noise": true,
-      "noise_seed": 10301411218912,
-      "cfg": 1,
-      "model": [
-        "20",
-        0
-      ],
-      "positive": [
-        "6",
-        0
-      ],
-      "negative": [
-        "7",
-        0
-      ],
-      "sampler": [
-        "14",
-        0
-      ],
-      "sigmas": [
-        "22",
-        0
-      ],
-      "latent_image": [
-        "5",
-        0
-      ]
-    },
-    "class_type": "SamplerCustom",
-    "_meta": {
-      "title": "SamplerCustom"
     }
   },
   "14": {
@@ -110,7 +75,7 @@
       "steps": 1,
       "denoise": 1,
       "model": [
-        "20",
+        "38",
         0
       ]
     },
@@ -119,17 +84,68 @@
       "title": "SDTurboScheduler"
     }
   },
-  "27": {
+  "32": {
     "inputs": {
-      "filename_prefix": "ComfyUI",
       "images": [
         "8",
         0
       ]
     },
-    "class_type": "SaveImage",
+    "class_type": "PreviewImage",
     "_meta": {
-      "title": "Save Image"
+      "title": "Preview Image"
+    }
+  },
+  "38": {
+    "inputs": {
+      "lora_name": "Harrlogos_v2.0.safetensors",
+      "strength_model": 0.8,
+      "strength_clip": 0.8,
+      "model": [
+        "20",
+        0
+      ],
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "40": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": 376733880095618,
+      "steps": 1,
+      "cfg": 1,
+      "sampler_name": "dpmpp_2s_ancestral",
+      "scheduler": "normal",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "38",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
     }
   }
 }

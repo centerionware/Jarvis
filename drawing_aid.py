@@ -25,7 +25,9 @@ class DrawingAid:
         self.client=client
         self.url = url
         # read self.file from sdxl-turbo-template.json
-        self.prompt = json.load(open("sdxl-turbo-template.json"))
+        self.prompt = json.load(open("sdxl-turbo-text-overlay-template.json"))
+        self.batch_prompt = json.load(open("sdxl-turbo-batch-template.json"))
+        self.textprompt = json.load(open("sdxl-turbo-text-template.json"))
 
     def __del__(self):
         print("Cleaning ThinkingAid")
@@ -37,10 +39,30 @@ class DrawingAid:
         image = requests.get(url).content
         return base64.b64encode(image).decode('utf-8')
     
-    def launch(self, command,  interaction, old_messages, negative_prompt="", noise_seed=10301411218912, cfg=1.0):
+    def launch(self, command,  interaction, old_messages, negative_prompt="", noise_seed=10301411218912, cfg=1.0,
+               overlay_text="", overlay_color=0, overlay_x=0, overlay_y=0, overlay_alignment="left", use_textlora=False, use_batch=True):
+        
+        if(overlay_x < 0):
+            overlay_x = 0
+        if(overlay_y < 0):
+            overlay_y = 0
+        if(overlay_x > 512):
+            overlay_x = 512
+        if(overlay_y > 512):
+            overlay_y = 512
+        if(overlay_alignment not in ["left", "center", "right"]):
+            overlay_alignment = "left"
         client_user = self.client
         # Copy self.prompt, go through it and modify %prompt% to be the "command" argument
-        client_prompt = json.loads(json.dumps(self.prompt))
+        client_prompt = None
+        if(use_textlora):
+            client_prompt = json.loads(json.dumps(self.textprompt))
+        else:
+            if(use_batch == False and overlay_text != ""):
+                client_prompt = json.loads(json.dumps(self.prompt))
+            else:
+                client_prompt = json.loads(json.dumps(self.batch_prompt))
+            # client_prompt = json.loads(json.dumps(self.prompt))
         for node in client_prompt:
             if "text" in client_prompt[node]["inputs"] and client_prompt[node]["inputs"]["text"] == "%prompt%":
                 client_prompt[node]["inputs"]["text"] = command
@@ -54,6 +76,16 @@ class DrawingAid:
             if "cfg" in client_prompt[node]["inputs"]:
                 client_prompt[node]["inputs"]["cfg"] = cfg
                 print("Set comfyui cfg")
+            if( client_prompt[node]["class_type"] == "EmptyLatentImage"):
+                batch_size = 1
+                if(use_batch): batch_size = 4
+                client_prompt[node]["inputs"]["batch_size"] = batch_size
+            if( client_prompt[node]["class_type"] == "Chatbox Overlay"):
+                client_prompt[node]["inputs"]["text"] = overlay_text
+                client_prompt[node]["inputs"]["color"] = overlay_color
+                client_prompt[node]["inputs"]["start_x"] = overlay_x
+                client_prompt[node]["inputs"]["start_y"] = overlay_y
+                client_prompt[node]["inputs"]["alignment"] = overlay_alignment
             #10301411218912
         stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))#json.loads(client_prompt)))
         stdout_thread.daemon = True

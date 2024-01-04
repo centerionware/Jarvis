@@ -58,6 +58,16 @@ def spinner(spinamnt=1):
         spinner_index = len(spinner_list)-1
 
 
+async def send_image_result(interaction, image_list):
+    sum_len = 0
+    
+    print ("Sending image result: ")
+    if(type(interaction) is discord.Interaction):
+        #await interaction.followup.send("Here's an image result")
+        await interaction.followup.send(files=image_list)
+    elif(type(interaction) is discord.Message):
+        await interaction.channel.send(files=image_list)
+
 @tasks.loop(seconds=1.0)
 async def hear():
     global thinking
@@ -69,10 +79,14 @@ async def hear():
         for elem in drawing.queue:
             nodes = elem[0]        
             for image in nodes:
+                images = []
+                im_num = 0
                 for image_data in nodes[image]:
-                    print("Sending an image result.")
-                    await send_image_result(elem[1], image_data)
-                    
+                    images.append(discord.File(io.BytesIO(image_data), elem[1].user.global_name+"_0xJarvis_image_batch_"+str(im_num)+".png"))
+                    im_num = im_num + 1
+                    # print("Sending an image result.")
+                    # await send_image_result(elem[1], image_data)
+                await send_image_result(elem[1], images)
                     #From here we need to upload the image to discord.. assume it'll be a png. might need to fix the template.json to have a save node.
 
             # for node_id in images:
@@ -131,13 +145,6 @@ async def on_message(message):
         thinking.launch(message.content, has_image, message, old_messages)
         #await message.channel.send('Thinking...')
 
-async def send_image_result(interaction, image_data):
-    print ("Sending image result: " + str(len(image_data)))
-    if(type(interaction) is discord.Interaction):
-        #await interaction.followup.send("Here's an image result")
-        await interaction.followup.send(file=discord.File(io.BytesIO(image_data), "image.png"))
-    elif(type(interaction) is discord.Message):
-        await interaction.channel.send(file=discord.File(io.BytesIO(image_data), "image.png"))
 
 async def send_result(interaction, arguments):
     print ("Sending result: " + arguments)
@@ -169,8 +176,8 @@ async def send_result(interaction, arguments):
             
         
 
-@tree.command(name = "ask", description = "Ask Jarvis a question", model="auto")
-async def ask(interaction,*, question:str, ):
+@tree.command(name = "ask", description = "Ask Jarvis a question")
+async def ask(interaction,*, question:str, model:str = "auto" ):
     global thinking
     arguments = question
     print("Message received: " + arguments)
@@ -179,16 +186,32 @@ async def ask(interaction,*, question:str, ):
     await interaction.response.defer(thinking=True)
 
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")
-async def image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1):
+async def image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
+                overlay_text:str="", overlay_color:str="#000000", overlay_x:int=19, overlay_y:int=0, overlay_alignment:str="left", use_textlora:bool=False, use_batch:bool=True):
     global thinking
     if(image_count > 5):
         image_count = 5
-    arguments = description
-    print("Message received: " + arguments)
+    if(overlay_text != ""):
+        if(overlay_color[0] != "#"):
+            overlay_color = "#" + overlay_color
+            use_batch=False
+        #Check if overlay_color is not in the format #XXXXXX where x's are probably hex.
+        if(len(overlay_color) != 7):
+            overlay_color = "#000000"
+        #Use a regex
+        for i in range(1,7):
+            if(overlay_color[i] not in "0123456789abcdefABCDEF"):
+                overlay_color = "#000000"
+                break
+    arguments = description        
+    #print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     for i in range(image_count):
-        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg)
+        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch)
     await interaction.response.defer(thinking=True)
+    if(overlay_text != "" and batch_size != 1):
+        await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    #await interaction.followup.send("Thinking...")
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)

@@ -1,0 +1,205 @@
+{
+  "5": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "%prompt%",
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "%negative_prompt%",
+      "clip": [
+        "20",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "20",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "13": {
+    "inputs": {
+      "add_noise": true,
+      "noise_seed": 721197053760400,
+      "cfg": 1,
+      "model": [
+        "20",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "sampler": [
+        "14",
+        0
+      ],
+      "sigmas": [
+        "22",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "SamplerCustom",
+    "_meta": {
+      "title": "SamplerCustom"
+    }
+  },
+  "14": {
+    "inputs": {
+      "sampler_name": "ddim"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "20": {
+    "inputs": {
+      "ckpt_name": "SDXL-TURBO/sd_xl_turbo_1.0_fp16.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "22": {
+    "inputs": {
+      "steps": 1,
+      "denoise": 1,
+      "model": [
+        "20",
+        0
+      ]
+    },
+    "class_type": "SDTurboScheduler",
+    "_meta": {
+      "title": "SDTurboScheduler"
+    }
+  },
+  "29": {
+    "inputs": {
+      "images": [
+        "31",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "31": {
+    "inputs": {
+      "text": "Hello my name is big daddy",
+      "textbox_width": 200,
+      "textbox_height": 100,
+      "max_font_size": 256,
+      "font": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+      "alignment": "center",
+      "color": "#000000",
+      "start_x": 15,
+      "start_y": 0,
+      "image": [
+        "35",
+        0
+      ]
+    },
+    "class_type": "Chatbox Overlay",
+    "_meta": {
+      "title": "Chatbox Overlay"
+    }
+  },
+  "33": {
+    "inputs": {
+      "image": "text_box.png",
+      "upload": "image"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "35": {
+    "inputs": {
+      "overlay_resize": "None",
+      "resize_method": "nearest-exact",
+      "rescale_factor": 1,
+      "width": 512,
+      "height": 512,
+      "x_offset": 0,
+      "y_offset": 0,
+      "rotation": 0,
+      "opacity": 0,
+      "base_image": [
+        "8",
+        0
+      ],
+      "overlay_image": [
+        "33",
+        0
+      ],
+      "optional_mask": [
+        "36",
+        0
+      ]
+    },
+    "class_type": "Image Overlay",
+    "_meta": {
+      "title": "Image Overlay"
+    }
+  },
+  "36": {
+    "inputs": {
+      "image": "text_box.png",
+      "channel": "alpha",
+      "upload": "image"
+    },
+    "class_type": "LoadImageMask",
+    "_meta": {
+      "title": "Load Image (as Mask)"
+    }
+  }
+}
