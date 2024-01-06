@@ -1,11 +1,8 @@
 # Jarvis
 
-MC - Main Controller branch. Designed to be a websocket endpoint agents can use to receive requests.
+MC - Main Controller branch. Designed to be a websocket endpoint agents can use to run the actual requests. Discord request comes in, gets sent to either Jarvis_MC.(image|text)_request(interaction, prompt), when the response is finished it'll be on the (thinking|drawing)_aid.queue like it was calling the api's directly before.
 
-This particular port will login with discord still and run jarvis. It's a very thin image, contains no ML things at all. No comfyui or ollama or litellm.
-Those will be provided by the agents, which will call back home. Let's make unique keys for the agents to authorize with.
-
-
+This image _does not_ do inference of any kind. It's the core routing and pipeworks. To run jarvis this will need to run, as well as at least one agent that provides both ImageRequest and TextRequest.
 
 Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
