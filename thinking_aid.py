@@ -30,7 +30,6 @@ def enqueue_output(queue, interaction, args, remote_url):
         queue.put([output,interaction])
         return
     output = requests.post(remote_url.replace("generate", "chat"), json=args).content.decode('utf-8')
-    print("received output from mistral")
     queue.put([output,interaction])
 
 
@@ -45,12 +44,21 @@ def get_url_from_message(message):
         return message.content
 
 class ThinkingAid:
+    queue = []
+    actual_queue = queue.Queue()
+    command = None
+    client = None
+    url = None
+    MC = None
+
     def __init__(self, client, url):
         self.queue = []
         self.actual_queue = queue.Queue()
         self.command = None
         self.client=client
         self.url = url
+    def set_MC(self, MC):
+        self.MC = MC
     def __del__(self):
         print("Cleaning ThinkingAid")
         self.kill_pids()
@@ -170,9 +178,10 @@ Do not post links to sites that are not safe for work, school, home, life, or th
         
         time.sleep(0.01)
         # self.pids[-1].stdin.write("\n")
-        stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args, self.url))
-        stdout_thread.daemon = True
-        stdout_thread.start()
+        self.MC.text_request(interaction, args)
+        #stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args, self.url))
+        #stdout_thread.daemon = True
+        #stdout_thread.start()
 
     def kill_pids(self):
         pass

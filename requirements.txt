@@ -4,3 +4,5 @@ litellm[proxy]
 orjson
 proxy
 websocket-client
+Flask==1.1.2
+Flask-SocketIO==5.0.1

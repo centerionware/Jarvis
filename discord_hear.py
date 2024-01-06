@@ -207,7 +207,35 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
     #print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     for i in range(image_count):
-        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch)
+        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
+    await interaction.response.defer(thinking=True)
+    if(overlay_text != "" and batch_size != 1):
+        await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    #await interaction.followup.send("Thinking...")
+
+@tree.command(name = "nt_image", description = "Prompt Jarvis to create an image")
+async def nt_image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
+                overlay_text:str="", overlay_color:str="#000000", overlay_x:int=19, overlay_y:int=0, overlay_alignment:str="left", use_textlora:bool=False, use_batch:bool=True):
+    global thinking
+    if(image_count > 5):
+        image_count = 5
+    if(overlay_text != ""):
+        if(overlay_color[0] != "#"):
+            overlay_color = "#" + overlay_color
+            use_batch=False
+        #Check if overlay_color is not in the format #XXXXXX where x's are probably hex.
+        if(len(overlay_color) != 7):
+            overlay_color = "#000000"
+        #Use a regex
+        for i in range(1,7):
+            if(overlay_color[i] not in "0123456789abcdefABCDEF"):
+                overlay_color = "#000000"
+                break
+    arguments = description        
+    #print("Message received: " + arguments)
+    old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
+    for i in range(image_count):
+        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
     await interaction.response.defer(thinking=True)
     if(overlay_text != "" and batch_size != 1):
         await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
@@ -215,5 +243,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)
+import Jarvis_MC
+MC = Jarvis_MC.Jarvis_MC(thinking, drawing)
 
 client.run(os.environ["DISCORD_TOKEN"])

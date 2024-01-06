@@ -25,7 +25,7 @@
   },
   "7": {
     "inputs": {
-      "text": "",
+      "text": "%negative_prompt%",
       "clip": [
         "38",
         1
