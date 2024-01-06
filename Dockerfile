@@ -1,4 +1,4 @@
-FROM registry.gitlab.centerionware.com:443/public-projects/jarvis:discord-bot-webui
+FROM registry.gitlab.centerionware.com:443/public-projects/jarvis:python3.9-supervisor-slim
 COPY . /app/
 WORKDIR /app
 # port 8080 available to the world outside this container
