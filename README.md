@@ -1,4 +1,12 @@
 # Jarvis
+
+MC - Main Controller branch. Designed to be a websocket endpoint agents can use to receive requests.
+
+This particular port will login with discord still and run jarvis. It's a very thin image, contains no ML things at all. No comfyui or ollama or litellm.
+Those will be provided by the agents, which will call back home. Let's make unique keys for the agents to authorize with.
+
+
+
 Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
 # 0xJarvis

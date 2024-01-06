@@ -9,6 +9,7 @@ import drawing_aid
 #import argparse
 import io
 import logging
+import Jarvis_MC
 
 # parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
 # parser.add_argument("-u", help="Url", type=str, default="http://localhost:11434/api/generate")
@@ -243,7 +244,8 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)
-import Jarvis_MC
-MC = Jarvis_MC.Jarvis_MC(thinking, drawing)
 
+MC = Jarvis_MC.Jarvis_MC(thinking, drawing)
+thinking.set_MC(MC)
+drawing.set_MC(MC)
 client.run(os.environ["DISCORD_TOKEN"])
