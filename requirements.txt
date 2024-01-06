@@ -1,3 +1,0 @@
-requests
-whisper_mic
-pyttsx3
