@@ -31,12 +31,10 @@ import queue
 import uuid
 # This is a dictionary of agents that are registered with the controller
 class JarvisMC:
-    image_agents = []
-    text_agents = []
-    drawing = None
-    thinking = None
-    server_thread = None
     def __init__(self, v_drawing_aid, v_thinking_aid):
+        self.image_agents = []
+        self.text_agents = []
+        self.server_thread = None
         self.drawing = v_drawing_aid
         self.thinking = v_thinking_aid
         pass
