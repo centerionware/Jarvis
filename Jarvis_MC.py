@@ -42,7 +42,7 @@ class JarvisMC:
         pass
     # Function to create websocket connection
     @socketio.on('capabilities')
-    def handle_my_custom_event(self, json):
+    def handle_capabilities(self, json):
         print('received json: ' + str(json))
         client_id = request.sid
         print('client_id: ' + str(client_id))
@@ -85,7 +85,7 @@ class JarvisMC:
             elif(smallest_queue[2].qsize() > agent[2].qsize()):
                 smallest_queue = agent
         return smallest_queue
-    @socketio.on('image response')
+    @socketio.on('ImageResponse')
     def image_response(self, json):
         agent_id = request.sid
         for agent in self.image_agents:
@@ -103,7 +103,7 @@ class JarvisMC:
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         emit("ImageRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
-    @socketio.on('text response')
+    @socketio.on('TextResponse')
     def text_response(self, json):
         agent_id = request.sid
         for agent in self.text_agents:
