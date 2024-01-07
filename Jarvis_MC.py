@@ -15,7 +15,7 @@
 # Let's use flask and socketio
 
 from flask import Flask, jsonify, request, abort, g as _g
-import config
+
 from flask_socketio import SocketIO, join_room, leave_room, emit
 import threading
 # run the flask app in a thread
