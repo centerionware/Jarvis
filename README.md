@@ -27,7 +27,7 @@ Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 ## Launching example:
 Be sure to change the ip or hostname to the host running comfyui
 ```sh
- docker login registry.gitlab.centerionware.com
+docker login registry.gitlab.centerionware.com
 docker run --name jarvis -d --gpus all -e COMFYUI_URL='192.168.1.1:8188' -e DISCORD_TOKEN=... -v 'c:\jarvis:/root/.ollama/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:drawing-jarvis
 ```
 LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
