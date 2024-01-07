@@ -15,7 +15,7 @@
 # Let's use flask and socketio
 
 from flask import Flask, jsonify, request, abort, g as _g
-import config
+
 from flask_socketio import SocketIO, join_room, leave_room, emit
 import threading
 # run the flask app in a thread
@@ -31,12 +31,10 @@ import queue
 import uuid
 # This is a dictionary of agents that are registered with the controller
 class JarvisMC:
-    image_agents = []
-    text_agents = []
-    drawing = None
-    thinking = None
-    server_thread = None
     def __init__(self, v_drawing_aid, v_thinking_aid):
+        self.image_agents = []
+        self.text_agents = []
+        self.server_thread = None
         self.drawing = v_drawing_aid
         self.thinking = v_thinking_aid
         pass
@@ -123,11 +121,13 @@ class JarvisMC:
         emit("TextRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
     def start(self):
         config = os.environ
-        if(config.MC_HOST is None):
-            config.MC_HOST = "*"
-        if(config.MC_PORT is None):
-            config.MC_PORT = 5000
-        self.server_thread = threading.Thread(target=socketio.run, args=(app, config.MC_HOST, config.MC_PORT))
+        host = "*"
+        port = 5000
+        if hasattr(config, 'MC_HOST'):
+            host = config.MC_HOST
+        if hasattr(config, 'MC_PORT'):
+            port = config.MC_PORT
+        self.server_thread = threading.Thread(target=socketio.run, args=(app, host, port))
         pass
     def stop(self):
         if(self.server_thread is not None):

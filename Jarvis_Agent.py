@@ -3,9 +3,9 @@
 # This is a socketio client. 
 import socketio
 from socketio.exceptions import TimeoutError
-import sys
+import os
 
-config = sys.environ
+config = os.environ
 
 from RequestHandlers import TextRequest, ImageRequest
 
@@ -16,9 +16,9 @@ class JarvisAgent:
         self.sio = socketio.SimpleClient()
         self.callbacks()
         self.sio.connect('https://register.jarvis.ai.centerionware.com', transports=['websocket'])
-        if( not "DISABLE_TEXT" in config):
+        if( not hasattr("DISABLE_TEXT", config)):
             self.capabilities.append("TextRequest")
-        if( not "DISABLE_IMAGE" in config):
+        if( not hasattr("DISABLE_IMAGE", config)):
             self.capabilities.append("ImageRequest")
         pass
         self.text_requests = []
