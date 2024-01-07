@@ -1,5 +1,5 @@
 import subprocess
-import queue
+import queue as libqueue
 import threading
 import time
 import requests
@@ -44,19 +44,13 @@ def get_url_from_message(message):
         return message.content
 
 class ThinkingAid:
-    queue = []
-    actual_queue = queue.Queue()
-    command = None
-    client = None
-    url = None
-    MC = None
-
     def __init__(self, client, url):
         self.queue = []
-        self.actual_queue = queue.Queue()
+        self.actual_queue = libqueue.Queue()
         self.command = None
         self.client=client
         self.url = url
+        self.MC = None
     def set_MC(self, MC):
         self.MC = MC
     def __del__(self):
