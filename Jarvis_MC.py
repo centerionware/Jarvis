@@ -2,7 +2,7 @@
 
 # The idea here is to create a main controller for registration of agents that run the ollama and or comfyui
 
-# It will provide a restful endpoint where agents can register back to jarvis to be used for inference.
+# It will provide a websocket  endpoint where agents can register back to jarvis to be used for inference.
 
 # It should perform tests to calculate load time and loaded run times for the available endpoints
 # Consistantly update these datapoints
@@ -48,9 +48,9 @@ class JarvisMC:
         print('client_id: ' + str(client_id))
 
         for cap in json["capabilities"]:
-            if(cap == "image"):
+            if(cap == "ImageRequest"):
                 self.image_agents.append([client_id, json, queue.Queue()])
-            elif(cap == "text"):
+            elif(cap == "TextRequest"):
                 self.text_agents.append([client_id, json, queue.Queue()])
 
     # Add the following route to handle agent connection/disconnection
