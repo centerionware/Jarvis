@@ -4,23 +4,27 @@
 import socketio
 from socketio.exceptions import TimeoutError
 import os
+import time
 
 config = os.environ
-
+sio = socketio.Client()
 from RequestHandlers import TextRequest, ImageRequest
-
+JA = None
 class JarvisAgent:
-    capabilities = []
-    sio = None
     def __init__(self):
-        self.sio = socketio.SimpleClient()
+        global JA
+        global sio
+        JA = self
+        self.capabilities = []
+        self.sio = sio
+        #self.sio = socketio.Client()
         self.callbacks()
         self.sio.connect('https://register.jarvis.ai.centerionware.com', transports=['websocket'])
-        if( not hasattr("DISABLE_TEXT", config)):
+        time.sleep(1)
+        if( not hasattr(config, "DISABLE_TEXT")):
             self.capabilities.append("TextRequest")
-        if( not hasattr("DISABLE_IMAGE", config)):
+        if( not hasattr(config, "DISABLE_IMAGE")):
             self.capabilities.append("ImageRequest")
-        pass
         self.text_requests = []
         self.image_requests = []
     def image_launch(self, prompt):
@@ -31,40 +35,56 @@ class JarvisAgent:
         pass
     def run(self):
         self.sio.wait()
-        
-    def call_backs(self):
-        @self.sio.timeout(1)
-        def heartbeat():
-            for tr in self.text_requests:
-                resp = tr.response()
-                if(resp is not None):
-                    self.sio.emit("TextResponse", resp)
-                    self.text_requests.remove(tr)
-            for ir in self.image_requests:
-                resp = ir.response()
-                if(resp is not None):
-                    self.sio.emit("ImageResponse", resp)
-                    self.image_requests.remove(ir)
+    def heartbeat(self):
+        for tr in self.text_requests:
+            resp = tr.response()
+            if(resp is not None):
+                self.sio.emit("TextResponse", resp)
+                self.text_requests.remove(tr)
+        for ir in self.image_requests:
+            resp = ir.response()
+            if(resp is not None):
+                self.sio.emit("ImageResponse", resp)
+                self.image_requests.remove(ir)     
+    def callbacks(self):
+        pass
 
-        @self.sio.event
-        def connect():
-            #self.sio.emit('subscribe','room')
-            print('connection established')
-            
-        @self.sio.on("Capabilities")
-        def capabilities(data):
-            self.sio.emit("Capabilities", self.capabilities, room=request.sid)
-            print(f"Data Received {data}")
-        @self.sio.on("TextRequest")
-        def text_request(data):
-            print(f"Data Received {data}")
+def heartbeat(v):
+    global JA
+    print(str(v))
+    if(JA != None):
+        JA.heartbeat(1)
+    pass
+sio.start_background_task(heartbeat,1)
 
-        @self.sio.on("ImageRequest")
-        def image_request(data):
-            print(f"Data Received {data}")
-        @self.sio.event
-        def auth(data):
-            print(f"Data Received {data}")
-        @self.sio.event
-        def disconnect():
-            print('disconnected from server')    
+
+@sio.on("Capabilities")
+def capabilities():
+    global JA
+    JA.sio.emit("Capabilities", JA.capabilities)
+    print("Sent Capabilities")
+
+@sio.event
+def connect():
+    #self.sio.emit('subscribe','room')
+    capabilities()
+    print('connection established')
+
+@sio.on("TextRequest")
+def text_request(data):
+    global JA
+    JA.text_launch(data)
+    print(f"Data Received {data}")
+
+@sio.on("ImageRequest")
+def image_request(data):
+    global JA
+    JA.image_launch(data)
+    print(f"Data Received {data}")
+
+@sio.event
+def auth(data):
+    print(f"Data Received {data}")
+@sio.event
+def disconnect():
+    print('disconnected from server')    
