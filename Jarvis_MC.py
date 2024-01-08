@@ -26,9 +26,14 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app,cors_allowed_origins="*")
 import queue
 import uuid
+@app.route("/")
+def is_running():
+    return 'running'
+
+MC = None
 # This is a dictionary of agents that are registered with the controller
 class JarvisMC:
     def __init__(self, v_drawing_aid, v_thinking_aid):
@@ -39,7 +44,6 @@ class JarvisMC:
         self.thinking = v_thinking_aid
         pass
     # Function to create websocket connection
-    @socketio.on('capabilities')
     def handle_capabilities(self, json):
         print('received json: ' + str(json))
         client_id = request.sid
@@ -52,12 +56,10 @@ class JarvisMC:
                 self.text_agents.append([client_id, json, queue.Queue()])
 
     # Add the following route to handle agent connection/disconnection
-    @socketio.on('connect')
-    def on_agent_connect(self, client_id):
+    def on_agent_connect(self):
         emit("Capabilities", room=request.sid)
         print('Agent connected, requested capabilities!')
 
-    @socketio.on('disconnect')
     def on_agent_disconnect(self):
         client_id = request.sid
         for agent in self.image_agents:
@@ -83,7 +85,6 @@ class JarvisMC:
             elif(smallest_queue[2].qsize() > agent[2].qsize()):
                 smallest_queue = agent
         return smallest_queue
-    @socketio.on('ImageResponse')
     def image_response(self, json):
         agent_id = request.sid
         for agent in self.image_agents:
@@ -101,7 +102,6 @@ class JarvisMC:
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         emit("ImageRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
-    @socketio.on('TextResponse')
     def text_response(self, json):
         agent_id = request.sid
         for agent in self.text_agents:
@@ -121,13 +121,18 @@ class JarvisMC:
         emit("TextRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
     def start(self):
         config = os.environ
-        host = "*"
+        global MC
+        MC = self
+        global app
+        host = "0.0.0.0"
         port = 5000
         if hasattr(config, 'MC_HOST'):
             host = config.MC_HOST
         if hasattr(config, 'MC_PORT'):
             port = config.MC_PORT
         self.server_thread = threading.Thread(target=socketio.run, args=(app, host, port))
+        self.server_thread.daemon = True
+        self.server_thread.start()
         pass
     def stop(self):
         if(self.server_thread is not None):
@@ -135,3 +140,36 @@ class JarvisMC:
             self.server_thread.join()
             self.server_thread = None
 
+
+
+
+def set_MC(v_MC):
+    global MC
+    MC = v_MC
+
+@socketio.on('TextResponse',namespace='/')
+def text_response(json):
+    MC.text_response(json)
+    pass
+@socketio.on('ImageResponse',namespace='/')
+def image_response(json):
+    MC.image_response(json)
+    pass
+@socketio.on('disconnect',namespace='/')
+def on_agent_disconnect():
+    MC.on_agent_disconnect()
+    pass
+@socketio.on('connect',namespace='/')
+def on_agent_connect():
+    MC.on_agent_connect()
+    pass
+@socketio.on('capabilities',namespace='/')
+def handle_capabilities(json): 
+    print("Capabilities received" + json.dumps(json))
+    MC.handle_capabilities(json)
+    pass
+
+if __name__ == "__main__":
+    MC = JarvisMC(None, None)
+    set_MC(MC)
+    MC.start()
