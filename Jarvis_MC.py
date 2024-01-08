@@ -57,7 +57,7 @@ class JarvisMC:
 
     # Add the following route to handle agent connection/disconnection
     def on_agent_connect(self):
-        emit("Capabilities", room=request.sid)
+        emit("Capabilities")
         print('Agent connected, requested capabilities!')
 
     def on_agent_disconnect(self):
@@ -147,23 +147,27 @@ def set_MC(v_MC):
     global MC
     MC = v_MC
 
-@socketio.on('TextResponse',namespace='/')
+@socketio.on('TextResponse')
 def text_response(json):
     MC.text_response(json)
+    print("Text Response Received")
     pass
-@socketio.on('ImageResponse',namespace='/')
+@socketio.on('ImageResponse')
 def image_response(json):
     MC.image_response(json)
+    print("Image Response Received")
     pass
-@socketio.on('disconnect',namespace='/')
+@socketio.on('disconnect')
 def on_agent_disconnect():
     MC.on_agent_disconnect()
+    print("Agent Disconnected")
     pass
-@socketio.on('connect',namespace='/')
+@socketio.on('connect')
 def on_agent_connect():
-    MC.on_agent_connect()
+    #MC.on_agent_connect()
+    print("Agent Connected")
     pass
-@socketio.on('capabilities',namespace='/')
+@socketio.on('capabilities')
 def handle_capabilities(json): 
     print("Capabilities received" + json.dumps(json))
     MC.handle_capabilities(json)
