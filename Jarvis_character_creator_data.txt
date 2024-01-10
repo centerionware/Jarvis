@@ -1,3 +1,0 @@
-Start on https://oobabooga.github.io/character-creator.html
-
-Copy everything from Jarvis.json to a json beautifier, and then extract the values from it to recreate exactly what was pupt into the character-creator.

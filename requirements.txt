@@ -5,3 +5,4 @@ orjson
 proxy
 websocket-client
 python-socketio[client]
+websockets[client]

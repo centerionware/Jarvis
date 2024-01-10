@@ -1,26 +1,35 @@
 #!/usr/bin/env python
 
 # This is a socketio client. 
-import socketio
-from socketio.exceptions import TimeoutError
+# import socketio
+# from socketio.exceptions import TimeoutError
 import os
 import time
 
 config = os.environ
-sio = socketio.Client()
+# sio = socketio.Client()
 from RequestHandlers import TextRequest, ImageRequest
 JA = None
+
+import json
+import asyncio
+import websockets
+#from websockets.sync.client import connect
+
+
+
 class JarvisAgent:
     def __init__(self):
         global JA
-        global sio
+        #global sio
         JA = self
         self.capabilities = []
-        self.sio = sio
-        #self.sio = socketio.Client()
-        self.callbacks()
-        self.sio.connect('https://register.jarvis.ai.centerionware.com', transports=['websocket'])
-        time.sleep(1)
+        # self.sio = sio
+        # #self.sio = socketio.Client()
+        # self.callbacks()
+        # self.sio.connect('https://register.jarvis.ai.centerionware.com', transports=['websocket'])
+        # time.sleep(1)
+        self.websocket = None
         if( not hasattr(config, "DISABLE_TEXT")):
             self.capabilities.append("TextRequest")
         if( not hasattr(config, "DISABLE_IMAGE")):
@@ -33,58 +42,45 @@ class JarvisAgent:
     def text_launch(self, prompt):
         self.image_requests.append(ImageRequest(prompt))
         pass
-    def run(self):
-        self.sio.wait()
-    def heartbeat(self):
+    async def run(self):
+        async with websockets.connect("wss://register.jarvis.ai.centerionware.com") as websocket:
+            self.websocket = websocket
+            await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
+            while True:
+                try:
+                    message = await websocket.recv()
+                    pkt = json.loads(message)
+                    if(pkt["type"] == "ImageRequest"):
+                        self.image_launch(pkt["payload"], websocket)
+                    if(pkt["type"] == "TextRequest"):
+                        self.text_launch(pkt["payload"], websocket)
+                    if(pkt["type"] == "Capabilities"):
+                        await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
+                        
+                except:
+                    print("Error")
+                    break
+    async def heartbeat(self):
+        await asyncio.sleep(1)
         for tr in self.text_requests:
             resp = tr.response()
             if(resp is not None):
-                self.sio.emit("TextResponse", resp)
+                await self.websocket.send(json.dumps({"type": "TextResponse", "payload": resp}))
                 self.text_requests.remove(tr)
         for ir in self.image_requests:
             resp = ir.response()
             if(resp is not None):
-                self.sio.emit("ImageResponse", resp)
-                self.image_requests.remove(ir)     
+                await self.websocket.send(json.dumps({"type": "ImageResponse", "payload": resp}))
+                #self.sio.emit("ImageResponse", resp)
+                self.image_requests.remove(ir)
+        asyncio.create_task(self.heartbeat())
     def callbacks(self):
         pass
 
-def heartbeat(v):
+async def main():
     global JA
-    print(str(v))
-    if(JA != None):
-        JA.heartbeat(1)
-    pass
-sio.start_background_task(heartbeat,1)
+    JA = JarvisAgent()
+    await JA.heartbeat()
+    await JA.run()
+    await asyncio.Future()  # run forever
 
-
-@sio.on("Capabilities")
-def capabilities():
-    global JA
-    JA.sio.emit("Capabilities", JA.capabilities)
-    print("Sent Capabilities")
-
-@sio.event
-def connect():
-    #self.sio.emit('subscribe','room')
-    capabilities()
-    print('connection established')
-
-@sio.on("TextRequest")
-def text_request(data):
-    global JA
-    JA.text_launch(data)
-    print(f"Data Received {data}")
-
-@sio.on("ImageRequest")
-def image_request(data):
-    global JA
-    JA.image_launch(data)
-    print(f"Data Received {data}")
-
-@sio.event
-def auth(data):
-    print(f"Data Received {data}")
-@sio.event
-def disconnect():
-    print('disconnected from server')    
