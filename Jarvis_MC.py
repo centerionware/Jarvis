@@ -139,7 +139,8 @@ class JarvisMC:
             raise Exception("No image agents available")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-        available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}})))
     def text_response(self, json, websocket):
         agent_id = websocket
         for agent in self.text_agents:
@@ -156,7 +157,11 @@ class JarvisMC:
             raise Exception("No text agents available")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-        available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
+        
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})))
+            # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
+       
     def start(self):
         config = os.environ
         global MC
