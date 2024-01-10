@@ -3,6 +3,4 @@ discord.py[voice]
 orjson
 proxy
 websocket-client
-Flask==3.0.0
-Flask-SocketIO==5.3.6
-flask-cors
+websocket[server]

@@ -14,9 +14,9 @@
 
 # Let's use flask and socketio
 
-from flask import Flask, jsonify, request, abort, g as _g
+# from flask import Flask, jsonify, request, abort, g as _g
 
-from flask_socketio import SocketIO, join_room, leave_room, emit
+# from flask_socketio import SocketIO, join_room, leave_room, emit
 import threading
 # run the flask app in a thread
 import os
@@ -24,14 +24,51 @@ import os
 #import drawing_aid 
 #import thinking_aid
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'supersecret!'
-socketio = SocketIO(app,cors_allowed_origins="*")
+# app = Flask(__name__)
+# app.config['SECRET_KEY'] = 'supersecret!'
+# socketio = SocketIO(app,cors_allowed_origins="*")
 import queue
 import uuid
-@app.route("/")
-def is_running():
-    return 'running'
+# @app.route("/")
+# def is_running():
+#     return 'running'
+remote_servers = []
+
+import asyncio
+from websockets.server import serve
+import json
+import websockets
+async def handler(websocket):
+    global MC
+    while True:
+        remote_servers.append({"socket": websocket, "capabilities": []})
+        try:
+            message = await websocket.recv()
+        except websockets.ConnectionClosedOK:
+            for server in remote_servers:
+                if(server["socket"] == websocket):
+                    remote_servers.remove(server)
+                    return
+            print("Unable to remove server from remote_servers...")
+            break
+        pkt = json.loads(message)
+        if(pkt["type"] == "Capabilities"):
+            MC.handle_capabilities(pkt["payload"], websocket)
+        if(pkt["type"] == "ImageResponse"):
+            MC.image_response(pkt["payload"], websocket)
+        if(pkt["type"] == "TextResponse"):
+            MC.text_response(pkt["payload"], websocket)
+serv_instance = None
+async def main(host, port):
+    global serv_instance
+    async with websockets.server.serve(handler, host, port) as SERVER_INSTANCE:
+        if(serv_instance is None):
+            serv_instance = SERVER_INSTANCE
+        await asyncio.Future()  # run forever
+
+def startit(host, port):
+    asyncio.run(main(host, port))
+
 
 MC = None
 # This is a dictionary of agents that are registered with the controller
@@ -42,11 +79,13 @@ class JarvisMC:
         self.server_thread = None
         self.drawing = v_drawing_aid
         self.thinking = v_thinking_aid
+        global MC
+        MC = self
         pass
     # Function to create websocket connection
-    def handle_capabilities(self, json):
+    def handle_capabilities(self, json, websocket):
         print('received json: ' + str(json))
-        client_id = request.sid
+        client_id = websocket
         print('client_id: ' + str(client_id))
 
         for cap in json["capabilities"]:
@@ -57,11 +96,10 @@ class JarvisMC:
 
     # Add the following route to handle agent connection/disconnection
     def on_agent_connect(self):
-        emit("Capabilities")
         print('Agent connected, requested capabilities!')
 
-    def on_agent_disconnect(self):
-        client_id = request.sid
+    def on_agent_disconnect(self, websocket):
+        client_id = websocket
         for agent in self.image_agents:
             if(agent[0] == client_id):
                 self.image_agents.remove(agent)
@@ -85,11 +123,11 @@ class JarvisMC:
             elif(smallest_queue[2].qsize() > agent[2].qsize()):
                 smallest_queue = agent
         return smallest_queue
-    def image_response(self, json):
-        agent_id = request.sid
+    def image_response(self, json, websocket):
+        agent_id = websocket
         for agent in self.image_agents:
             if(agent[0] == agent_id):
-                print("Received image response from agent: " + str(agent_id))
+                print("Received image response from agent. " ) #+ str(agent_id))
                 queue = agent[2].get()
                 self.drawing.queue.put([json, queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
@@ -101,12 +139,12 @@ class JarvisMC:
             raise Exception("No image agents available")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-        emit("ImageRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
-    def text_response(self, json):
-        agent_id = request.sid
+        available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
+    def text_response(self, json, websocket):
+        agent_id = websocket
         for agent in self.text_agents:
             if(agent[0] == agent_id):
-                print("Received text response from agent: " + str(agent_id))
+                print("Received text response from agent." )#+ str(agent_id))
                 queue = agent[2].get()
                 self.thinking.queue.put([json, queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
@@ -118,7 +156,7 @@ class JarvisMC:
             raise Exception("No text agents available")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-        emit("TextRequest", {"id":id,"prompt":json_prompt}, room=available_agent[0])
+        available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
     def start(self):
         config = os.environ
         global MC
@@ -130,50 +168,13 @@ class JarvisMC:
             host = config.MC_HOST
         if hasattr(config, 'MC_PORT'):
             port = config.MC_PORT
-        self.server_thread = threading.Thread(target=socketio.run, args=(app, host, port))
+        self.server_thread = threading.Thread(target=startit, args=(host, port))
         self.server_thread.daemon = True
         self.server_thread.start()
         pass
     def stop(self):
         if(self.server_thread is not None):
-            socketio.stop()
+            serv_instance.stop()
             self.server_thread.join()
             self.server_thread = None
 
-
-
-
-def set_MC(v_MC):
-    global MC
-    MC = v_MC
-
-@socketio.on('TextResponse')
-def text_response(json):
-    MC.text_response(json)
-    print("Text Response Received")
-    pass
-@socketio.on('ImageResponse')
-def image_response(json):
-    MC.image_response(json)
-    print("Image Response Received")
-    pass
-@socketio.on('disconnect')
-def on_agent_disconnect():
-    MC.on_agent_disconnect()
-    print("Agent Disconnected")
-    pass
-@socketio.on('connect')
-def on_agent_connect():
-    #MC.on_agent_connect()
-    print("Agent Connected")
-    pass
-@socketio.on('capabilities')
-def handle_capabilities(json): 
-    print("Capabilities received" + json.dumps(json))
-    MC.handle_capabilities(json)
-    pass
-
-if __name__ == "__main__":
-    MC = JarvisMC(None, None)
-    set_MC(MC)
-    MC.start()
