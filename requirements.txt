@@ -3,4 +3,4 @@ discord.py[voice]
 orjson
 proxy
 websocket-client
-websocket[server]
+websockets[server]
