@@ -1,34 +1,20 @@
 #!/usr/bin/env python
 
-# This is a socketio client. 
-# import socketio
-# from socketio.exceptions import TimeoutError
 import os
 import time
-
-config = os.environ
-# sio = socketio.Client()
-from RequestHandlers import TextRequest, ImageRequest
-JA = None
-
 import json
 import asyncio
 import websockets
-#from websockets.sync.client import connect
+from RequestHandlers import TextRequest, ImageRequest
 
-
+config = os.environ
+JA = None
 
 class JarvisAgent:
     def __init__(self):
         global JA
-        #global sio
         JA = self
         self.capabilities = []
-        # self.sio = sio
-        # #self.sio = socketio.Client()
-        # self.callbacks()
-        # self.sio.connect('https://register.jarvis.ai.centerionware.com', transports=['websocket'])
-        # time.sleep(1)
         self.websocket = None
         if( not hasattr(config, "DISABLE_TEXT")):
             self.capabilities.append("TextRequest")
@@ -56,7 +42,6 @@ class JarvisAgent:
                         self.text_launch(pkt["payload"], websocket)
                     if(pkt["type"] == "Capabilities"):
                         await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
-                        
                 except:
                     print("Error")
                     break
@@ -83,4 +68,3 @@ async def main():
     await JA.heartbeat()
     await JA.run()
     await asyncio.Future()  # run forever
-
