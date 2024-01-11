@@ -16,35 +16,50 @@ class JarvisAgent:
         JA = self
         self.capabilities = []
         self.websocket = None
-        if( not hasattr(config, "DISABLE_TEXT")):
+        if( config.get("DISABLE_TEXT", "") == ""):
             self.capabilities.append("TextRequest")
-        if( not hasattr(config, "DISABLE_IMAGE")):
+        if( config.get("DISABLE_IMAGE","") == ""):
             self.capabilities.append("ImageRequest")
         self.text_requests = []
         self.image_requests = []
     def image_launch(self, prompt):
+        print("image launch")
         self.text_requests.append(TextRequest(prompt))
         pass
     def text_launch(self, prompt):
+        print("Text launch")
         self.image_requests.append(ImageRequest(prompt))
         pass
     async def run(self):
-        async with websockets.connect("wss://register.jarvis.ai.centerionware.com") as websocket:
-            self.websocket = websocket
-            await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
-            while True:
-                try:
-                    message = await websocket.recv()
-                    pkt = json.loads(message)
-                    if(pkt["type"] == "ImageRequest"):
-                        self.image_launch(pkt["payload"], websocket)
-                    if(pkt["type"] == "TextRequest"):
-                        self.text_launch(pkt["payload"], websocket)
-                    if(pkt["type"] == "Capabilities"):
-                        await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
-                except:
-                    print("Error")
-                    break
+        backoff = 1
+        await asyncio.sleep(backoff)
+        while(True):
+            try:
+                async with websockets.connect("wss://register.jarvis.ai.centerionware.com") as websocket:
+                    print ("Connected")
+                    self.websocket = websocket
+                    await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
+                    print ("Sent capabilities: " + str(self.capabilities))
+                    while True:
+                        try:
+
+                            message = await websocket.recv()
+                            print("message received." + message)
+                            pkt = json.loads(message)
+                            if(pkt["type"] == "ImageRequest"):
+                                self.image_launch(pkt["payload"])
+                            if(pkt["type"] == "TextRequest"):
+                                self.text_launch(pkt["payload"])
+                            if(pkt["type"] == "Capabilities"):
+                                await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
+                        except Exception as E:
+                            print("Error:" + str(E) )
+                            break
+            except Exception as E:
+                print("Exception:" + str(E))
+            if(backoff < 10):
+                backoff = backoff*2
+            print("Reconnecting...")
     async def heartbeat(self):
         await asyncio.sleep(1)
         for tr in self.text_requests:
