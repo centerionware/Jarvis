@@ -4,3 +4,4 @@ orjson
 proxy
 websocket-client
 websockets[server]
+nest-asyncio

@@ -171,7 +171,7 @@ class JarvisMC:
             host = config.MC_HOST
         if hasattr(config, 'MC_PORT'):
             port = config.MC_PORT
-        await start_it(host, port)
+        await startit(host, port)
     def start(self):
         config = os.environ
         host = "0.0.0.0"
