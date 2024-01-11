@@ -132,7 +132,6 @@ async def hear():
 async def on_ready():
     global MC
     global client_user
-    await MC.start_async()
     await tree.sync()
     hear.start()
     client_user = client.user
@@ -262,4 +261,10 @@ drawing.set_MC(MC)
 #MC.start()
 #await MC.start_async()
 
-client.run(os.environ["DISCORD_TOKEN"])
+async def real_main(client, MC):
+    await client.start(os.environ["DISCORD_TOKEN"])
+    await MC.start_async()
+
+import asyncio
+asyncio.run(main())
+#client.run(os.environ["DISCORD_TOKEN"])
