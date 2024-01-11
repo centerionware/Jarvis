@@ -257,6 +257,7 @@ drawing = drawing_aid.DrawingAid(client, comfyui_url)
 MC = Jarvis_MC.JarvisMC(thinking, drawing)
 thinking.set_MC(MC)
 drawing.set_MC(MC)
-MC.start()
+#MC.start()
+await MC.start_async()
 
 client.run(os.environ["DISCORD_TOKEN"])

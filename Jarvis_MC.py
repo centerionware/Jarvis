@@ -163,12 +163,17 @@ class JarvisMC:
 
         await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
             # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-
+    async def start_async(self):
+        config = os.environ
+        host = "0.0.0.0"
+        port = 5000
+        if hasattr(config, 'MC_HOST'):
+            host = config.MC_HOST
+        if hasattr(config, 'MC_PORT'):
+            port = config.MC_PORT
+        await start_it(host, port)
     def start(self):
         config = os.environ
-        global MC
-        MC = self
-        global app
         host = "0.0.0.0"
         port = 5000
         if hasattr(config, 'MC_HOST'):
