@@ -266,5 +266,5 @@ async def real_main(client, MC):
     await MC.start_async()
 
 import asyncio
-asyncio.run(main())
+asyncio.run(real_main())
 #client.run(os.environ["DISCORD_TOKEN"])
