@@ -68,3 +68,6 @@ async def main():
     await JA.heartbeat()
     await JA.run()
     await asyncio.Future()  # run forever
+
+if __name__ == "__main__":
+    asyncio.run(main())
