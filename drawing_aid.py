@@ -6,16 +6,8 @@ import requests
 import base64
 import json
 import os
-import comfyui_api
+#import comfyui_api
 import logging
-
-def enqueue_output(queue, interaction, url, prompt):
-    client = comfyui_api.Client(url)
-    print("Sending prompt to comfyui")
-    output = client.get_images(client.ws, prompt)
-    print("Received output from comfyui") # + json.dumps(output))
-    queue.put([output,interaction])
-    client.ws.close()
 
 class DrawingAid:
     def __init__(self, client, url="localhost:8188"):
