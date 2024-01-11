@@ -150,6 +150,7 @@ class JarvisMC:
         if(available_agent is None):
             print("No image agents available")
             raise Exception("No image agents available")
+        print ("Starting an image request")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
@@ -158,6 +159,7 @@ class JarvisMC:
         if(available_agent is None):
             print("No text agents available")
             raise Exception("No text agents available")
+        print("Starting a text request")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
 

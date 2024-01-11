@@ -132,10 +132,13 @@ async def hear():
 async def on_ready():
     global MC
     global client_user
+    global client
     await tree.sync()
     hear.start()
     client_user = client.user
     print(f'We have logged in as {client.user}')
+    
+    client.loop.create_task( MC.start_async() )
 
 @client.event
 async def on_message(message):
@@ -259,18 +262,21 @@ MC = Jarvis_MC.JarvisMC(thinking, drawing)
 thinking.set_MC(MC)
 drawing.set_MC(MC)
 
-async def real_main(client, MC):
-    print( "Starting tasks.")
-    task1 = asyncio.create_task( client.start(os.environ["DISCORD_TOKEN"]) )
-    task2 = asyncio.create_task( MC.start_async())
-    await task1
-    await task2
+#def real_main(client, MC):
+print( "Starting tasks.")
+#client.loop.create_task( MC.start_async() )
+client.run(os.environ["DISCORD_TOKEN"])
+    #task1 = asyncio.create_task( client.start(os.environ["DISCORD_TOKEN"]) )
+    #task2 = asyncio.create_task( MC.start_async())
+    #await task1
+    #await task2
 #    The following will only work in python3.11. the above works in 3.9+
 #    async with asyncio.TaskGroup() as tg:
 #        task1 = tg.create_task( client.start(os.environ["DISCORD_TOKEN"]) )
 #        task2 = tg.create_task( MC.start_async())
 
 
-import asyncio
-asyncio.run(real_main(client, MC))
+#import asyncio
+#asyncio.run(real_main(client, MC))
+#real_main(client, MC)
 #client.run(os.environ["DISCORD_TOKEN"])
