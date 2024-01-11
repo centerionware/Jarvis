@@ -184,7 +184,7 @@ async def ask(interaction,*, question:str, model:str = "auto" ):
     print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try:
-        thinking.launch(arguments, False, interaction, old_messages, model)
+        await thinking.launch(arguments, False, interaction, old_messages, model)
         await interaction.response.defer(thinking=True)
     except Exception as e:
         await interaction.response.send("Something broke!: " + str(e.str()) )
@@ -212,7 +212,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try: 
         for i in range(image_count):
-            drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
+            await drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
         await interaction.response.defer(thinking=True)
         if(overlay_text != "" and batch_size != 1):
             await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
@@ -243,7 +243,7 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try:
         for i in range(image_count):
-            drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
+            await drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
         await interaction.response.defer(thinking=True)
         if(overlay_text != "" and batch_size != 1):
             await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")

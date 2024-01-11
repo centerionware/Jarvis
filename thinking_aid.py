@@ -71,7 +71,7 @@ class ThinkingAid:
             if(message.content.strip() != ""):
                 new_messages.append(message)
         return new_messages
-    def launch(self, command, url, interaction, old_messages, model):
+    async def launch(self, command, url, interaction, old_messages, model):
         client_user = self.client
         old_messages = self.look_for_forget_in_messages(old_messages)
         self.command = command
@@ -172,7 +172,7 @@ Do not post links to sites that are not safe for work, school, home, life, or th
         
         time.sleep(0.01)
         # self.pids[-1].stdin.write("\n")
-        self.MC.text_request(interaction, args)
+        await self.MC.text_request(interaction, args)
         #stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args, self.url))
         #stdout_thread.daemon = True
         #stdout_thread.start()

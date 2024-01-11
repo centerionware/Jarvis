@@ -18,7 +18,6 @@ def enqueue_output(queue, interaction, url, prompt):
     client.ws.close()
 
 class DrawingAid:
-
     def __init__(self, client, url="localhost:8188"):
         self.queue = []
         self.actual_queue = queue.Queue()
@@ -47,7 +46,7 @@ class DrawingAid:
         image = requests.get(url).content
         return base64.b64encode(image).decode('utf-8')
     
-    def launch(self, command,  interaction, old_messages, negative_prompt="", noise_seed=10301411218912, cfg=1.0,
+    async def launch(self, command,  interaction, old_messages, negative_prompt="", noise_seed=10301411218912, cfg=1.0,
                overlay_text="", overlay_color=0, overlay_x=0, overlay_y=0, overlay_alignment="left", use_textlora=False, use_batch=True, use_nt=False):
         
         if(overlay_x < 0):
@@ -105,7 +104,7 @@ class DrawingAid:
                 client_prompt[node]["inputs"]["start_y"] = overlay_y
                 client_prompt[node]["inputs"]["alignment"] = overlay_alignment
             #10301411218912
-        self.MC.image_request(interaction, client_prompt)
+        await self.MC.image_request(interaction, client_prompt)
         #stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))#json.loads(client_prompt)))
         #stdout_thread.daemon = True
         #stdout_thread.start()
