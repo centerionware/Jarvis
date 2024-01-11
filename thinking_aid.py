@@ -103,7 +103,7 @@ class ThinkingAid:
                 else:
                     formatted_messages.append({"role": "user", "content": message.content})
             
-        if(url is not False and (model is "auto" or model is "llava")):
+        if(url != False and (model == "auto" or model == "llava")):
             any_urls = True
             args = {
                 "model": "llava",
@@ -118,7 +118,7 @@ class ThinkingAid:
             }
         else:
             s_model = "mistral"
-            if( s_model is not "auto"):
+            if( s_model != "auto"):
                 s_model = model
             args ={
                 "model": s_model,
