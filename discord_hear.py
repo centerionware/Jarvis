@@ -130,7 +130,9 @@ async def hear():
 
 @client.event
 async def on_ready():
+    global MC
     global client_user
+    await MC.start_async()
     await tree.sync()
     hear.start()
     client_user = client.user
@@ -258,6 +260,6 @@ MC = Jarvis_MC.JarvisMC(thinking, drawing)
 thinking.set_MC(MC)
 drawing.set_MC(MC)
 #MC.start()
-await MC.start_async()
+#await MC.start_async()
 
 client.run(os.environ["DISCORD_TOKEN"])
