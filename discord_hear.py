@@ -245,7 +245,7 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)
 
-MC = Jarvis_MC.Jarvis_MC(thinking, drawing)
+MC = Jarvis_MC.JarvisMC(thinking, drawing)
 thinking.set_MC(MC)
 drawing.set_MC(MC)
 MC.start()
