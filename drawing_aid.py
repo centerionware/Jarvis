@@ -18,17 +18,12 @@ def enqueue_output(queue, interaction, url, prompt):
     client.ws.close()
 
 class DrawingAid:
-    queue = []
-    actual_queue = queue.Queue()
-    command = None
-    client = None
-    url = None
-    MC = None
 
     def __init__(self, client, url="localhost:8188"):
         self.queue = []
         self.actual_queue = queue.Queue()
         self.command = None
+        self.MC = None
         self.client=client
         self.url = url
         # read self.file from sdxl-turbo-template.json
