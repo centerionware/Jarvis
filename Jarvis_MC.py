@@ -7,8 +7,8 @@
 # It should perform tests to calculate load time and loaded run times for the available endpoints
 # Consistantly update these datapoints
 # Provide a function that can return an available endpoint, maybe it should be a full proxy.. try and keep one connection
-# open to the agents, and proxy the requests through. This will reduce tcp overhead and allow scaleout to however many sockets the 
-# mc host can handle of agents. 
+# open to the agents, and proxy the requests through. This will reduce tcp overhead and allow scaleout to however many sockets the
+# mc host can handle of agents.
 # When a connection fails the agent is in charge of reconnecting, not the controller. No exponential backoff in the controller.
 
 
@@ -21,7 +21,11 @@ import threading
 # run the flask app in a thread
 import os
 
-#import drawing_aid 
+
+import nest_asyncio
+nest_asyncio.apply()
+
+#import drawing_aid
 #import thinking_aid
 
 # app = Flask(__name__)
@@ -157,11 +161,11 @@ class JarvisMC:
             raise Exception("No text agents available")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-        
+
         loop = asyncio.get_event_loop()
         loop.run_until_complete(available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})))
             # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-    
+
     def start(self):
         config = os.environ
         global MC
@@ -182,4 +186,3 @@ class JarvisMC:
             serv_instance.stop()
             self.server_thread.join()
             self.server_thread = None
-
