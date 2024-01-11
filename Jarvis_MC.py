@@ -132,15 +132,6 @@ class JarvisMC:
                 self.drawing.queue.put([json, queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         pass
-    def image_request(self, interaction, json_prompt):
-        available_agent = self.get_image_agent()
-        if(available_agent is None):
-            print("No image agents available")
-            raise Exception("No image agents available")
-        id = str(uuid.uuid4())
-        available_agent[2].put([id, json_prompt, interaction])
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}})))
     def text_response(self, json, websocket):
         agent_id = websocket
         for agent in self.text_agents:
@@ -150,6 +141,15 @@ class JarvisMC:
                 self.thinking.queue.put([json, queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
         pass
+    def image_request(self, interaction, json_prompt):
+        available_agent = self.get_image_agent()
+        if(available_agent is None):
+            print("No image agents available")
+            raise Exception("No image agents available")
+        id = str(uuid.uuid4())
+        available_agent[2].put([id, json_prompt, interaction])
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}})))
     def text_request(self, interaction, json_prompt):
         available_agent = self.get_text_agent()
         if(available_agent is None):
@@ -161,7 +161,7 @@ class JarvisMC:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})))
             # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-       
+    
     def start(self):
         config = os.environ
         global MC

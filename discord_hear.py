@@ -183,8 +183,11 @@ async def ask(interaction,*, question:str, model:str = "auto" ):
     arguments = question
     print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    thinking.launch(arguments, False, interaction, old_messages, model)
-    await interaction.response.defer(thinking=True)
+    try:
+        thinking.launch(arguments, False, interaction, old_messages, model)
+        await interaction.response.defer(thinking=True)
+    except Exception as e:
+        await interaction.response.send("Something broke!: " + str(e.str()) )
 
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")
 async def image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
@@ -207,11 +210,14 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
     arguments = description        
     #print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    for i in range(image_count):
-        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
-    await interaction.response.defer(thinking=True)
-    if(overlay_text != "" and batch_size != 1):
-        await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    try: 
+        for i in range(image_count):
+            drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
+        await interaction.response.defer(thinking=True)
+        if(overlay_text != "" and batch_size != 1):
+            await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    except Exception as e:
+        await interaction.response.send("Something broke!: " + str(e.str()) )
     #await interaction.followup.send("Thinking...")
 
 @tree.command(name = "nt_image", description = "Prompt Jarvis to create an image")
@@ -235,11 +241,14 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
     arguments = description        
     #print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
-    for i in range(image_count):
-        drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
-    await interaction.response.defer(thinking=True)
-    if(overlay_text != "" and batch_size != 1):
-        await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    try:
+        for i in range(image_count):
+            drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
+        await interaction.response.defer(thinking=True)
+        if(overlay_text != "" and batch_size != 1):
+            await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+    except Exception as e:
+        await interaction.response.send("Something broke!: " + str(e.str()) )
     #await interaction.followup.send("Thinking...")
 
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
