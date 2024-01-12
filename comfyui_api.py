@@ -6,7 +6,7 @@ import uuid
 import json
 import urllib.request
 import urllib.parse
-
+import base64
 
 
 class UUIDEncoder(json.JSONEncoder):
@@ -69,7 +69,7 @@ class Client:
                     images_output = []
                     for image in node_output['images']:
                         image_data = self.get_image(image['filename'], image['subfolder'], image['type'])
-                        images_output.append(image_data)
+                        images_output.append(base64.b64encode(image_data).decode('utf-8'))
                 output_images[node_id] = images_output
 
         return output_images

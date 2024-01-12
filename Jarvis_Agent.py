@@ -6,6 +6,8 @@ import json
 import asyncio
 import websockets
 from RequestHandlers import TextRequest, ImageRequest
+import traceback
+import base64
 
 config = os.environ
 JA = None
@@ -24,11 +26,12 @@ class JarvisAgent:
         self.image_requests = []
     def image_launch(self, prompt):
         print("image launch")
-        self.text_requests.append(TextRequest(prompt))
+        self.image_requests.append(ImageRequest(prompt))
         pass
     def text_launch(self, prompt):
         print("Text launch")
-        self.image_requests.append(ImageRequest(prompt))
+        self.text_requests.append(TextRequest(prompt))
+        
         pass
     async def run(self):
         backoff = 1
@@ -53,9 +56,11 @@ class JarvisAgent:
                             if(pkt["type"] == "Capabilities"):
                                 await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
                         except Exception as E:
+                            traceback.print_exc()
                             print("Error:" + str(E) )
                             break
             except Exception as E:
+                traceback.print_exc()
                 print("Exception:" + str(E))
             if(backoff < 10):
                 backoff = backoff*2
@@ -70,6 +75,9 @@ class JarvisAgent:
         for ir in self.image_requests:
             resp = ir.response()
             if(resp is not None):
+                # for e in resp:
+                #     for img in resp[e]:
+                #         resp[e][img] = base64.b64encode(resp[e][img]).decode('utf-8')
                 await self.websocket.send(json.dumps({"type": "ImageResponse", "payload": resp}))
                 #self.sio.emit("ImageResponse", resp)
                 self.image_requests.remove(ir)
