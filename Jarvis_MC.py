@@ -42,19 +42,30 @@ import asyncio
 from websockets.server import serve
 import json
 import websockets
+def dc_client(websocket):
+    global MC
+    MC.on_agent_disconnect(websocket)
+    for server in remote_servers:
+        if(server["socket"] == websocket):
+            remote_servers.remove(server)
+            return
+    
+
 async def handler(websocket):
     global MC
     while True:
+        print ("Handling remote connection..")
         remote_servers.append({"socket": websocket, "capabilities": []})
         try:
             message = await websocket.recv()
         except websockets.ConnectionClosedOK:
             print("Client disconnected...")
-            for server in remote_servers:
-                if(server["socket"] == websocket):
-                    remote_servers.remove(server)
-                    return
+            dc_client(websocket)
             print("Unable to remove server from remote_servers...")
+            break
+        except Exception as E:
+            dc_client(websocket)
+            print ("Generic Error: ", E)
             break
         pkt = json.loads(message)
         if(pkt["type"] == "Capabilities"):
@@ -135,10 +146,15 @@ class JarvisMC:
             if(agent[0] == agent_id):
                 print("Received image response from agent. " ) #+ str(agent_id))
                 queue = agent[2].get()
-                # tlist = json[1]
-                # for el in tlist:
-                #     for img in tlist[el]:
-                #         tlist[el][img] = base64.b64dec0de(tlist[el][img].encode('utf-8'))
+                retry_count = 0
+                while(json[0] != queue[0]):
+                    print("Response id does not match request id. Requeue.")
+                    agent[2].put(queue)
+                    queue = agent[2].get()
+                    if(retry_count >= queue.qsize()):
+                        print("Can't find interaction in queue. Dropping response.")
+                        return
+                    retry_count += 1
                 self.drawing.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         pass
@@ -149,6 +165,16 @@ class JarvisMC:
                 print(json[1])
                 print("Received text response from agent." + str(json) )#+ str(agent_id))
                 queue = agent[2].get()
+                retry_count = 0
+                while(json[0] != queue[0]):
+                    print("Response id does not match request id. Requeue.")
+                    agent[2].put(queue)
+                    queue = agent[2].get()
+                    if(retry_count >= queue.qsize()):
+                        print("Can't find interaction in queue. Dropping response.")
+                        return
+                    retry_count += 1
+                    
                 self.thinking.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
         pass
