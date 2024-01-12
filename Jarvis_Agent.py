@@ -35,8 +35,8 @@ class JarvisAgent:
         pass
     async def run(self):
         backoff = 1
-        await asyncio.sleep(backoff)
         while(True):
+            await asyncio.sleep(backoff)
             try:
                 async with websockets.connect("wss://register.jarvis.ai.centerionware.com") as websocket:
                     print ("Connected")
