@@ -37,7 +37,7 @@ import uuid
 # def is_running():
 #     return 'running'
 remote_servers = []
-
+import base64
 import asyncio
 from websockets.server import serve
 import json
@@ -49,6 +49,7 @@ async def handler(websocket):
         try:
             message = await websocket.recv()
         except websockets.ConnectionClosedOK:
+            print("Client disconnected...")
             for server in remote_servers:
                 if(server["socket"] == websocket):
                     remote_servers.remove(server)
@@ -62,10 +63,11 @@ async def handler(websocket):
             MC.image_response(pkt["payload"], websocket)
         if(pkt["type"] == "TextResponse"):
             MC.text_response(pkt["payload"], websocket)
+
 serv_instance = None
 async def main(host, port):
     global serv_instance
-    async with websockets.server.serve(handler, host, port) as SERVER_INSTANCE:
+    async with websockets.server.serve(handler, host, port, max_size=104857600) as SERVER_INSTANCE:
         if(serv_instance is None):
             serv_instance = SERVER_INSTANCE
         await asyncio.Future()  # run forever
@@ -133,16 +135,21 @@ class JarvisMC:
             if(agent[0] == agent_id):
                 print("Received image response from agent. " ) #+ str(agent_id))
                 queue = agent[2].get()
-                self.drawing.queue.put([json, queue[2]])
+                # tlist = json[1]
+                # for el in tlist:
+                #     for img in tlist[el]:
+                #         tlist[el][img] = base64.b64dec0de(tlist[el][img].encode('utf-8'))
+                self.drawing.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         pass
     def text_response(self, json, websocket):
         agent_id = websocket
         for agent in self.text_agents:
             if(agent[0] == agent_id):
-                print("Received text response from agent." )#+ str(agent_id))
+                print(json[1])
+                print("Received text response from agent." + str(json) )#+ str(agent_id))
                 queue = agent[2].get()
-                self.thinking.queue.put([json, queue[2]])
+                self.thinking.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
         pass
     async def image_request(self, interaction, json_prompt):
