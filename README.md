@@ -13,7 +13,7 @@ Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
 **New Main File:**
 * discord_hear.py - provides basic discord echo bot.
-* comfyui_api.py - Provides connectivity to comfyui's api. 
+* Jarvis_MC.py - the websocket server for the Jarvis Main Controller.
 * thinking_aid.py - provides connectivity to ollama's api
 * drawing_aid.py - provides a wrapper around comfyui that's the same syntax as thinking_aid so discord_hear.py can use similar notation
 * sdxl-turbo-template.json - An SDXL workflow exported from comfyui in API mode (settings/enable dev mode options), use %prompt% to add a prompt and %negative_prompt% to add a negative prompt. Currently the image saved is the one comfyui_api.py responds with, future plan is to use previews and not store on the server
