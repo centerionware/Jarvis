@@ -74,6 +74,8 @@ async def handler(websocket):
             MC.image_response(pkt["payload"], websocket)
         if(pkt["type"] == "TextResponse"):
             MC.text_response(pkt["payload"], websocket)
+        if(pkt["type"] == "SearchResponse"):
+            MC.search_response(pkt["payload"], websocket)
 
 serv_instance = None
 async def main(host, port):
@@ -231,7 +233,7 @@ class JarvisMC:
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
-        
+
     async def image_request(self, interaction, json_prompt):
         available_agent = self.get_image_agent()
         if(available_agent is None):

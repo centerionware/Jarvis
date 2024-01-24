@@ -88,6 +88,7 @@ async def hear():
     spinner()
     if( len(searching.queue) > 0):
         for elem in searching.queue:
+            print ("Sending a search result.")
             send_result(elem[1], elem[0]) 
             # This should be json search results, 
             # for now dump to discord to examine 
@@ -96,6 +97,7 @@ async def hear():
             # then have the llm's analyze the pages for relevance and all that, 
             # summerize the pages, etc, 
             # then finally dump the results with the original link to discord.
+        searching.queue = []
     if( len(drawing.queue) > 0):
         for elem in drawing.queue:
             nodes = elem[0]        
