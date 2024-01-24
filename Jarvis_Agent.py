@@ -28,18 +28,6 @@ class JarvisAgent:
         self.text_requests = []
         self.image_requests = []
         self.search_requests = []
-    def image_launch(self, prompt):
-        print("image launch")
-        self.image_requests.append(ImageRequest(prompt))
-        pass
-    def text_launch(self, prompt):
-        print("Text launch")
-        self.text_requests.append(TextRequest(prompt))
-        pass
-    def search_launch(self, prompt):
-        print("search launch")
-        self.search_requests.append(SearchRequest(prompt))
-        pass
     async def run(self):
         backoff = 1
         while(True):
@@ -56,11 +44,11 @@ class JarvisAgent:
                             print("message received." + message)
                             pkt = json.loads(message)
                             if(pkt["type"] == "ImageRequest"):
-                                self.image_launch(pkt["payload"])
+                                self.image_requests.append(ImageRequest(pkt["payload"]))
                             if(pkt["type"] == "TextRequest"):
-                                self.text_launch(pkt["payload"])
+                                self.text_requests.append(TextRequest(pkt["payload"]))
                             if(pkt["type"] == "SearchRequest"):
-                                self.search_launch(pkt["payload"])
+                                self.search_requests.append(SearchRequest(pkt["payload"]))
                             if(pkt["type"] == "Capabilities"):
                                 await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
                         except Exception as E:
@@ -89,6 +77,11 @@ class JarvisAgent:
                 await self.websocket.send(json.dumps({"type": "ImageResponse", "payload": resp}))
                 #self.sio.emit("ImageResponse", resp)
                 self.image_requests.remove(ir)
+        for sr in self.search_requests:
+            resp = sr.response()
+            if(resp is not None):
+                await self.websocket.send(json.dumps({"type": "SearchResponse", "payload": resp}))
+                self.search_requests.remove(sr)
         asyncio.create_task(self.heartbeat())
     def callbacks(self):
         pass
