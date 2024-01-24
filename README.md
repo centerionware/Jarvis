@@ -20,6 +20,7 @@ Agent branch. This branch provides an agent that will connect back to the main b
 
 ## Notes:
 
+Adding search capabilities. searxng can be used to provide an Agent with the capabilities to search the internet across many search engines.
 
 ## Environment Variables and defaults
 These can be changed in case you'd prefer to use another comfyui or ollama server
@@ -30,6 +31,13 @@ These can be changed in case you'd prefer to use another comfyui or ollama serve
 ```sh
 docker login registry.gitlab.centerionware.com
 docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+```
+Note: If you wish to add searxng, docker in docker can be used. Simply mount /var/run/docker.sock to the container and the image will launch searxng, and connect the containers on a private network so the bot can use the api. this could be considered a security risk. Should probably consider migrating to podman in docker for the searxng, but this is already in place so whatever.
+
+```sh
+docker login registry.gitlab.centerionware.com
+docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -p 8188:8188 -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+
 ```
 LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
 ComfyUI should be available on port 8188, it also is insecure. 
