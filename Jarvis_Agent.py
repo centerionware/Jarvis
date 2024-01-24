@@ -24,7 +24,7 @@ class JarvisAgent:
             self.capabilities.append("ImageRequest")
         if( config.get("DISABLE_SEARCH","") == ""):
             if os.path.exists('/var/run/docker.sock'):
-                self.capabilities.append("WebSearch")
+                self.capabilities.append("SearchRequest")
         self.text_requests = []
         self.image_requests = []
         self.search_requests = []
