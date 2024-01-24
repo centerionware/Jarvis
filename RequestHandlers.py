@@ -71,3 +71,28 @@ class ImageRequest:
         return None
     def error(self, error):
         pass
+
+def search_threaded_query(TR_OBJ, args):
+    id = TR_OBJ.id
+    queue = TR_OBJ.queue
+    remote_url = 'http://searxng:8080/search'
+    print("Querying searxng")
+    output = requests.post(remote_url, json=args).content.decode('utf-8')
+    print("received output from searxng")
+    queue.put([id, output])
+
+class SearchRequest:
+    def __init__(self, prompt):
+        self.id = prompt["id"]
+        self.prompt = prompt["prompt"]
+        self.queue = queue.Queue()
+        self.thread = threading.Thread(target=search_threaded_query, args=(self, self.prompt))
+        self.thread.daemon = True
+        self.thread.start()
+        pass
+    def response(self):
+        if(not self.queue.empty()):
+            return self.queue.get()
+        return None
+    def error(self, error):
+        pass

@@ -5,7 +5,7 @@ import time
 import json
 import asyncio
 import websockets
-from RequestHandlers import TextRequest, ImageRequest
+from RequestHandlers import TextRequest, ImageRequest, SearchRequest
 import traceback
 import base64
 
@@ -22,8 +22,12 @@ class JarvisAgent:
             self.capabilities.append("TextRequest")
         if( config.get("DISABLE_IMAGE","") == ""):
             self.capabilities.append("ImageRequest")
+        if( config.get("DISABLE_SEARCH","") == ""):
+            if os.path.exists('/var/run/docker.sock'):
+                self.capabilities.append("WebSearch")
         self.text_requests = []
         self.image_requests = []
+        self.search_requests = []
     def image_launch(self, prompt):
         print("image launch")
         self.image_requests.append(ImageRequest(prompt))
@@ -31,7 +35,10 @@ class JarvisAgent:
     def text_launch(self, prompt):
         print("Text launch")
         self.text_requests.append(TextRequest(prompt))
-        
+        pass
+    def search_launch(self, prompt):
+        print("search launch")
+        self.search_requests.append(SearchRequest(prompt))
         pass
     async def run(self):
         backoff = 1
@@ -45,7 +52,6 @@ class JarvisAgent:
                     print ("Sent capabilities: " + str(self.capabilities))
                     while True:
                         try:
-
                             message = await websocket.recv()
                             print("message received." + message)
                             pkt = json.loads(message)
@@ -53,6 +59,8 @@ class JarvisAgent:
                                 self.image_launch(pkt["payload"])
                             if(pkt["type"] == "TextRequest"):
                                 self.text_launch(pkt["payload"])
+                            if(pkt["type"] == "SearchRequest"):
+                                self.search_launch(pkt["payload"])
                             if(pkt["type"] == "Capabilities"):
                                 await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
                         except Exception as E:
