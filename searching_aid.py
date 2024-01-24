@@ -69,8 +69,8 @@ class SearchingAid:
         formatted_messages = []
         any_urls = False
         args = {
-            "q":search_query
-            "format":json
+            "q":search_query,
+            "format":"json"
         }
         # find if .topic is in the interaction.channel
         # Create a base system prompt that's multilines
