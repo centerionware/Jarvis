@@ -89,7 +89,7 @@ async def hear():
     if( len(searching.queue) > 0):
         for elem in searching.queue:
             print ("Sending a search result.")
-            send_result(elem[1], elem[0]) 
+            await send_result(elem[1], elem[0]) 
             # This should be json search results, 
             # for now dump to discord to examine 
             # but this should be an entrypoint to a search result handler, 
