@@ -71,11 +71,7 @@ class JarvisAgent:
         for ir in self.image_requests:
             resp = ir.response()
             if(resp is not None):
-                # for e in resp:
-                #     for img in resp[e]:
-                #         resp[e][img] = base64.b64encode(resp[e][img]).decode('utf-8')
                 await self.websocket.send(json.dumps({"type": "ImageResponse", "payload": resp}))
-                #self.sio.emit("ImageResponse", resp)
                 self.image_requests.remove(ir)
         for sr in self.search_requests:
             resp = sr.response()
