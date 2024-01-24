@@ -57,9 +57,9 @@ class SearchingAid:
         print("Cleaning SearchingAid")
         self.kill_pids()
     def dl_and_enc_image(self, url):
-        
+        pass
     def look_for_forget_in_messages(self, old_messages):
-        
+        pass
     async def launch(self, command, url, interaction, search_query, model):
         client_user = self.client
         
