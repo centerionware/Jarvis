@@ -61,49 +61,19 @@ class SearchingAid:
     def look_for_forget_in_messages(self, old_messages):
         pass
     async def launch(self, command, url, interaction, search_query, model):
+        print("Launching Search")
         client_user = self.client
-        
         self.command = command
-        args = {}
-        
         formatted_messages = []
         any_urls = False
         args = {
-            "q":search_query,
+            "q": search_query,
             "format":"json"
         }
-        # find if .topic is in the interaction.channel
-        # Create a base system prompt that's multilines
-        base_system_prompt = """
-"""
-        try:
-            if(interaction.channel.topic is not None and any_urls is False):
-                nbase_system_prompt = base_system_prompt.replace("%topic%", interaction.channel.topic)
-                formatted_messages.insert(0,{"role":"system", "content": nbase_system_prompt})
-                
-        except:
-            pass
-        if(any_urls is True):
-            #print("A url is true!")
-            #print(json.dumps(args))
-            args["model"] = "llava"
-        else:
-            args["model"] = "mistral"            
-        #loop each message in formatted_messages but in reverse
-        for message in formatted_messages[::-1]:
-            #Push message to the front of the list
-            args["messages"].insert(0,message)
-        # url http://localhost:11434/api/generate -d
-        if(any_urls is True):
-            print("A url is true!")
-            print(json.dumps(args))
-        
         time.sleep(0.01)
-        # self.pids[-1].stdin.write("\n")
-        await self.MC.text_request(interaction, args)
-        #stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, args, self.url))
-        #stdout_thread.daemon = True
-        #stdout_thread.start()
+        print("Launching Search..")
+        await self.MC.search_request(interaction, args)
+        print("Launched Search.")
 
     def kill_pids(self):
         pass

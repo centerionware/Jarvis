@@ -272,7 +272,8 @@ async def ai_search(interaction,*, question:str, model:str = "auto" ):
     print("Message received: " + arguments)
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try:
-        await searching.launch(arguments, False, interaction, old_messages, model)
+        await searching.launch(question, False, interaction, question, model)
+        # async def launch(self, command, url, interaction, search_query, model):
         await interaction.response.defer(thinking=True)
     except Exception as e:
         await interaction.response.defer(thinking=True)
