@@ -90,12 +90,14 @@ def startit(host, port):
 MC = None
 # This is a dictionary of agents that are registered with the controller
 class JarvisMC:
-    def __init__(self, v_drawing_aid, v_thinking_aid):
+    def __init__(self, v_drawing_aid, v_thinking_aid, v_searching_aid):
         self.image_agents = []
         self.text_agents = []
+        self.search_agents = []
         self.server_thread = None
         self.drawing = v_drawing_aid
         self.thinking = v_thinking_aid
+        self.searching = v_searching_aid
         global MC
         MC = self
         pass
@@ -110,7 +112,8 @@ class JarvisMC:
                 self.image_agents.append([client_id, json, queue.Queue()])
             elif(cap == "TextRequest"):
                 self.text_agents.append([client_id, json, queue.Queue()])
-
+            elif(cap == "SearchRequest"):
+                self.search_agents.append([client_id, json, queue.Queue()])
     # Add the following route to handle agent connection/disconnection
     def on_agent_connect(self):
         print('Agent connected, requested capabilities!')
@@ -123,15 +126,10 @@ class JarvisMC:
         for agent in self.text_agents:
             if(agent[0] == client_id):
                 self.text_agents.remove(agent)
+        for agent in self.search_agents:
+            if(agent[0] == client_id):
+                self.search_agents.remove(agent)
         print('Agent disconnected!')
-    def get_text_agent(self):
-        smallest_queue = None
-        for agent in self.text_agents:
-            if(smallest_queue is None):
-                smallest_queue = agent
-            elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
-        return smallest_queue
     def get_image_agent(self):
         smallest_queue = None
         for agent in self.image_agents:
@@ -158,6 +156,24 @@ class JarvisMC:
                 self.drawing.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         pass
+    def get_text_agent(self):
+        smallest_queue = None
+        for agent in self.text_agents:
+            if(smallest_queue is None):
+                smallest_queue = agent
+            elif(smallest_queue[2].qsize() > agent[2].qsize()):
+                smallest_queue = agent
+        return smallest_queue
+    async def text_request(self, interaction, json_prompt):
+        available_agent = self.get_text_agent()
+        if(available_agent is None):
+            print("No text agents available")
+            raise Exception("No text agents available")
+        print("Starting a text request")
+        id = str(uuid.uuid4())
+        available_agent[2].put([id, json_prompt, interaction])
+
+        await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
     def text_response(self, json, websocket):
         agent_id = websocket
         for agent in self.text_agents:
@@ -178,6 +194,44 @@ class JarvisMC:
                 self.thinking.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
         pass
+    def get_search_agent(self):
+        smallest_queue = None
+        for agent in self.search_agents:
+            if(smallest_queue is None):
+                smallest_queue = agent
+            elif(smallest_queue[2].qsize() > agent[2].qsize()):
+                smallest_queue = agent
+        return smallest_queue
+    def search_response(self, json, websocket):
+        agent_id = websocket
+        for agent in self.search_agents:
+            if(agent[0] == agent_id):
+                print(json[1])
+                print("Received text response from agent." + str(json) )#+ str(agent_id))
+                queue = agent[2].get()
+                retry_count = 0
+                while(json[0] != queue[0]):
+                    print("Response id does not match request id. Requeue.")
+                    agent[2].put(queue)
+                    queue = agent[2].get()
+                    if(retry_count >= queue.qsize()):
+                        print("Can't find interaction in queue. Dropping response.")
+                        return
+                    retry_count += 1
+                    
+                self.searching.queue.append([json[1], queue[2]])
+                # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
+        pass
+    async def search_request(self, interaction, json_prompt):
+        available_agent = self.get_search_agent()
+        if(available_agent is None):
+            print("No text agents available")
+            raise Exception("No text agents available")
+        print("Starting a text request")
+        id = str(uuid.uuid4())
+        available_agent[2].put([id, json_prompt, interaction])
+        await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
+        
     async def image_request(self, interaction, json_prompt):
         available_agent = self.get_image_agent()
         if(available_agent is None):

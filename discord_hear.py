@@ -6,6 +6,7 @@ import json
 import sys
 import thinking_aid
 import drawing_aid
+import searching_aid
 #import argparse
 import io
 import logging
@@ -18,6 +19,7 @@ import base64
 # args = parser.parse_args()
 comfyui_url = "localhost:8188"
 ollama_url = "http://localhost:11434/api/generate"
+search_url = "http://searxng:8080/search"
 try:
     comfyui_url = os.environ["COMFYUI_URL"]
 except:
@@ -29,6 +31,13 @@ try:
 except:
     pass
 print("Ollam URL: " + ollama_url)
+
+try:
+    search_url = os.environ["SEARCH_URL"]
+except:
+    pass
+print("Search URL: " + search_url)
+
 
 
 
@@ -63,7 +72,6 @@ def spinner(spinamnt=1):
 async def send_image_result(interaction, image_list):
     sum_len = 0
     
-    print ("Sending image result: ")
     if(type(interaction) is discord.Interaction):
         #await interaction.followup.send("Here's an image result")
         await interaction.followup.send(files=image_list)
@@ -74,9 +82,20 @@ async def send_image_result(interaction, image_list):
 async def hear():
     global thinking
     global drawing
+    global searching
     drawing.hear()
     thinking.hear()
     spinner()
+    if( len(searching.queue) > 0):
+        for elem in searching.queue:
+            send_result(elem[1], elem[0]) 
+            # This should be json search results, 
+            # for now dump to discord to examine 
+            # but this should be an entrypoint to a search result handler, 
+            # which could run async 'requests' to get the page contents, 
+            # then have the llm's analyze the pages for relevance and all that, 
+            # summerize the pages, etc, 
+            # then finally dump the results with the original link to discord.
     if( len(drawing.queue) > 0):
         for elem in drawing.queue:
             nodes = elem[0]        
@@ -86,47 +105,25 @@ async def hear():
                 for image_data in nodes[image]:
                     images.append(discord.File(io.BytesIO(base64.b64decode(image_data.encode('utf-8'))), elem[1].user.global_name+"_0xJarvis_image_batch_"+str(im_num)+".png"))
                     im_num = im_num + 1
-                    # print("Sending an image result.")
-                    # await send_image_result(elem[1], image_data)
                 await send_image_result(elem[1], images)
-                    #From here we need to upload the image to discord.. assume it'll be a png. might need to fix the template.json to have a save node.
-
-            # for node_id in images:
-            #     for image_data in images[node_id]:
-            #         from PIL import Image
-            #         import io
-            #         image = Image.open(io.BytesIO(image_data))
         drawing.queue = []
-            #         image.show()
     if( len(thinking.queue) > 0):
-        #print("Heard back from the AI Chatbot: " + thinking.queue)
-        #ParseResponse(thinking.queue)
-        #print()
         for elem in thinking.queue:
             result = elem[0]
             if(result == ""):
                 continue
-            #print("Result: " + str(result) + " " +str( type(result)))
             try:
                 result = json.loads(result)
-                #print("Loaded json")
                 response = ""
                 if("message" not in result):
                     response = result["response"]
                 else:
                     response = result["message"]["content"]
-                #print("Extracted response" + response)
                 model = result["model"]
-                #print("Extracted model" + model)
                 formatted_response = "Model: " + model + "\n" + response
-                #print("Sending result: " + formatted_response)
                 await send_result(elem[1],formatted_response)
             except Exception as e:
                 logging.warning("Error parsing result "  + str(e))
-                #try:
-                    #await send_result(elem[1],str(e))
-                #except Exception as e2:
-                #    print("Error parsing result " + str(e2) + "\n" + str(e))
         thinking.queue = []
 
 @client.event
@@ -145,11 +142,19 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
+    global thinking
     if message.content.startswith('$'):
         has_image = thinking_aid.get_url_from_message(message)
         old_messages = [messageo async for messageo in message.channel.history(limit=10, oldest_first=False)]
         thinking.launch(message.content, has_image, message, old_messages)
-        #await message.channel.send('Thinking...')
+        arguments = question
+        
+        try:
+            await thinking.launch(arguments, has_image, interaction, old_messages, model)
+            await interaction.response.defer(thinking=True)
+        except Exception as e:
+            await interaction.response.defer(thinking=True)
+            await interaction.followup.send("Something broke!: " + str(e) )
 
 
 async def send_result(interaction, arguments):
@@ -198,7 +203,7 @@ async def ask(interaction,*, question:str, model:str = "auto" ):
 @tree.command(name = "image", description = "Prompt Jarvis to create an image")
 async def image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
                 overlay_text:str="", overlay_color:str="#000000", overlay_x:int=19, overlay_y:int=0, overlay_alignment:str="left", use_textlora:bool=False, use_batch:bool=True):
-    global thinking
+    global drawing
     if(image_count > 5):
         image_count = 5
     if(overlay_text != ""):
@@ -214,7 +219,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
                 overlay_color = "#000000"
                 break
     arguments = description        
-    #print("Message received: " + arguments)
+    
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try: 
         for i in range(image_count):
@@ -230,7 +235,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
 @tree.command(name = "nt_image", description = "Prompt Jarvis to create an image")
 async def nt_image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
                 overlay_text:str="", overlay_color:str="#000000", overlay_x:int=19, overlay_y:int=0, overlay_alignment:str="left", use_textlora:bool=False, use_batch:bool=True):
-    global thinking
+    global drawing
     if(image_count > 5):
         image_count = 5
     if(overlay_text != ""):
@@ -246,7 +251,7 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
                 overlay_color = "#000000"
                 break
     arguments = description        
-    #print("Message received: " + arguments)
+    
     old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
     try:
         for i in range(image_count):
@@ -259,28 +264,29 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
         await interaction.followup.send("Something broke!: " + str(e) )
     #await interaction.followup.send("Thinking...")
 
+
+@tree.command(name = "ai_search", description = "Have Jarvis search the internet for you.")
+async def ai_search(interaction,*, question:str, model:str = "auto" ):
+    global searching
+    arguments = question
+    print("Message received: " + arguments)
+    old_messages = [message async for message in interaction.channel.history(limit=10, oldest_first=False)]
+    try:
+        await searching.launch(arguments, False, interaction, old_messages, model)
+        await interaction.response.defer(thinking=True)
+    except Exception as e:
+        await interaction.response.defer(thinking=True)
+        await interaction.followup.send("Something broke!: " + str(e) )
+
+# Sick cyclical dependencies batman.
 thinking = thinking_aid.ThinkingAid(client, ollama_url)
 drawing = drawing_aid.DrawingAid(client, comfyui_url)
+searching = searching_aid.SearchingAid(client, search_url)
 
-MC = Jarvis_MC.JarvisMC(drawing, thinking)
+MC = Jarvis_MC.JarvisMC(drawing, thinking, searching)
+
 thinking.set_MC(MC)
 drawing.set_MC(MC)
+searching.set_MC(MC)
 
-#def real_main(client, MC):
-print( "Starting tasks.")
-#client.loop.create_task( MC.start_async() )
 client.run(os.environ["DISCORD_TOKEN"])
-    #task1 = asyncio.create_task( client.start(os.environ["DISCORD_TOKEN"]) )
-    #task2 = asyncio.create_task( MC.start_async())
-    #await task1
-    #await task2
-#    The following will only work in python3.11. the above works in 3.9+
-#    async with asyncio.TaskGroup() as tg:
-#        task1 = tg.create_task( client.start(os.environ["DISCORD_TOKEN"]) )
-#        task2 = tg.create_task( MC.start_async())
-
-
-#import asyncio
-#asyncio.run(real_main(client, MC))
-#real_main(client, MC)
-#client.run(os.environ["DISCORD_TOKEN"])
