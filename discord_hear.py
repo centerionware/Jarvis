@@ -158,12 +158,18 @@ async def on_message(message):
             await interaction.response.defer(thinking=True)
             await interaction.followup.send("Something broke!: " + str(e) )
 
+async def send_as_file(interaction, raw_data: BytesIO, filename):
 
-async def send_result(interaction, arguments):
+async def send_result(interaction, arguments: str):
     print ("Sending result: " + arguments)
     messages = []
     wrapped = [arguments] #textwrap.wrap(arguments)
     t_msg = ""
+
+    if( len(arguments) > 4000 )
+        file = [discord.File(io.BytesIO(arguments.encode('utf-8'), elem[1].user.global_name+'long_result_utf8.txt'))]
+        return await send_image_result(file)
+
     for m in wrapped:
         if(len(t_msg) + len(m) > 2000):
             messages.append(t_msg)

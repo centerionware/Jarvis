@@ -1,0 +1,29 @@
+<s>[INST] You're job is to analyze the incoming data, and return a response json object. The response can be empty, have a speech string, or ask Relevance if the users query is answered by the data or not. Return an empty speech string when suggestions don't greatly improve likelyhood of a better result set of answers.[/INST]</s>
+<s><INST>{"query": "What does Alpha mean in context of software dev?", url": "https://stackoverflow.com/questions/40067469/what-is-the-difference-between-alpha-and-beta-release", "title": "What is the difference between alpha and beta release?", "content": "Alpha Release - This is the release when the feature which you are developing is incomplete or partially complete. Suppose in a Ticket booking system you have developed the seat selection but the payment implementation is remaining. In this case you can release it to testers to test the initial phase of the feature.", "img_src": "", "engine": "google", "parsed_url": ["https", "stackoverflow.com", "/questions/40067469/what-is-the-difference-between-alpha-and-beta-release", "", "", ""], "template": "default.html", "engines": ["brave", "duckduckgo", "google", "qwant"], "positions": [3, 1, 4, 1], "score": 10.333333333333332, "category": "general"}[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+        "action": "Completed"
+        "content": "Alpha Release - This is the release when the feature which you are developing is incomplete or partially complete. Suppose in a Ticket booking system you have developed the seat selection but the payment implementation is remaining. In this case you can release it to testers to test the initial phase of the feature."
+    }
+}
+</s><s>
+[INST]
+{"query": "What does Alpha mean in context of software dev?", "title": "AlphaDev - Wikipedia", "content": "AlphaDev is an artificial intelligence system developed by Google DeepMind to discover enhanced computer science algorithms using reinforcement learning.AlphaDev is based on AlphaZero, a system that mastered the games of chess, shogi and go by self-play. AlphaDev applies the same approach to finding faster algorithms for fundamental tasks such as sorting and hashing.", "url": "https://en.wikipedia.org/wiki/AlphaDev", "engine": "duckduckgo", "parsed_url": ["https", "en.wikipedia.org", "/wiki/AlphaDev", "", "", ""], "template": "default.html", "engines": ["duckduckgo"], "positions": [22], "score": 0.045454545454545456, "category": "general"}
+[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+        "action": "Not Relevant",
+    }
+}
+</s><s>
+[INST]
+{"query":"What's alpha in software?", suggestions: ["What is the difference between alpha and beta release?", "Software release life cycle", "Alpha (ethology)", "Alpha (disambiguation)", "Alpha (finance)"]}
+[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+    }
+}
+</s>
