@@ -1,0 +1,38 @@
+<s>[INST] You're job is to analyze the incoming data, and return a response json object. The response can be empty, have a speech string, or ask Relevance if the users query is answered by the data or not. Return an empty speech string when suggestions don't greatly improve likelyhood of a better result set of answers.[/INST]</s><s><INST>{"query": "What does Alpha mean in context of software dev?", url": "https://stackoverflow.com/questions/40067469/what-is-the-difference-between-alpha-and-beta-release", "title": "What is the difference between alpha and beta release?", "content": "Alpha Release - This is the release when the feature which you are developing is incomplete or partially complete. Suppose in a Ticket booking system you have developed the seat selection but the payment implementation is remaining. In this case you can release it to testers to test the initial phase of the feature.", "img_src": "", "engine": "google", "parsed_url": ["https", "stackoverflow.com", "/questions/40067469/what-is-the-difference-between-alpha-and-beta-release", "", "", ""], "template": "default.html", "engines": ["brave", "duckduckgo", "google", "qwant"], "positions": [3, 1, 4, 1], "score": 10.333333333333332, "category": "general"}[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+        "action": "ask-ai relevance"
+    }
+}
+</s><s>
+[INST]
+{"query":"What alpha?", suggestions: ["What is the difference between alpha and beta release?", "Software release life cycle", "Alpha (ethology)", "Alpha (disambiguation)", "Alpha (finance)"]}
+[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+        "speech": "What alpha? is a good ambiguous question. Here are some suggestions that might help you find what you're looking for.\n\nWhat is the difference between alpha and beta release?\nSoftware release life cycle\nAlpha (ethology)\nAlpha (disambiguation)\nAlpha (finance)\n\n",
+    }
+}
+</s><s>
+[INST]
+{"query":"What's alpha in software?", suggestions: ["What is the difference between alpha and beta release?", "Software release life cycle", "Alpha (ethology)", "Alpha (disambiguation)", "Alpha (finance)"]}
+[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+    }
+}
+</s>
+<s>
+[INST]
+{"query":"What alpha?", suggestions: ["What is the difference between alpha and beta release?", "Software release life cycle", "Alpha (ethology)", "Alpha (disambiguation)", "Alpha (finance)"]}
+[/INST]
+{
+    "characterName": "Orchestrator",
+    "response": {
+        "speech": "What alpha? is a good ambiguous question. Here are some suggestions that might help you find what you're looking for.\n\nWhat is the difference between alpha and beta release?\nSoftware release life cycle\nAlpha (ethology)\nAlpha (disambiguation)\nAlpha (finance)\n\n",
+    }
+}
+</s>
