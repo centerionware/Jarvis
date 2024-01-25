@@ -168,7 +168,7 @@ async def send_result(interaction, arguments: str):
 
     if( len(arguments) > 4000 ):
         file = [discord.File(io.BytesIO(arguments.encode('utf-8')), interaction.user.global_name+'long_result_utf8.txt')]
-        return await send_image_result(file)
+        return await send_image_result(interaction, file)
 
     for m in wrapped:
         if(len(t_msg) + len(m) > 2000):
