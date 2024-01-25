@@ -166,7 +166,7 @@ async def send_result(interaction, arguments: str):
     wrapped = [arguments] #textwrap.wrap(arguments)
     t_msg = ""
 
-    if( len(arguments) > 4000 )
+    if( len(arguments) > 4000 ):
         file = [discord.File(io.BytesIO(arguments.encode('utf-8'), elem[1].user.global_name+'long_result_utf8.txt'))]
         return await send_image_result(file)
 
