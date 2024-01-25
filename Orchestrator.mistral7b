@@ -25,14 +25,3 @@
     }
 }
 </s>
-<s>
-[INST]
-{"query":"What alpha?", suggestions: ["What is the difference between alpha and beta release?", "Software release life cycle", "Alpha (ethology)", "Alpha (disambiguation)", "Alpha (finance)"]}
-[/INST]
-{
-    "characterName": "Orchestrator",
-    "response": {
-        "speech": "What alpha? is a good ambiguous question. Here are some suggestions that might help you find what you're looking for.\n\nWhat is the difference between alpha and beta release?\nSoftware release life cycle\nAlpha (ethology)\nAlpha (disambiguation)\nAlpha (finance)\n\n",
-    }
-}
-</s>
