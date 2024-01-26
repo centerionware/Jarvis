@@ -276,8 +276,8 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
     #await interaction.followup.send("Thinking...")
 
 
-@tree.command(name = "ai_search", description = "Have Jarvis search the internet for you.")
-async def ai_search(interaction,*, question:str, model:str = "auto" ):
+@tree.command(name = "search", description = "Have Jarvis search the internet for you.")
+async def search(interaction,*, question:str, model:str = "auto" ):
     global searching
     arguments = question
     print("Message received: " + arguments)
