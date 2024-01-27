@@ -71,11 +71,11 @@ async def handler(websocket):
         if(pkt["type"] == "Capabilities"):
             MC.handle_capabilities(pkt["payload"], websocket)
         if(pkt["type"] == "ImageResponse"):
-            MC.image_response(pkt["payload"], websocket)
+            await MC.image_response(pkt["payload"], websocket)
         if(pkt["type"] == "TextResponse"):
-            MC.text_response(pkt["payload"], websocket)
+            await MC.text_response(pkt["payload"], websocket)
         if(pkt["type"] == "SearchResponse"):
-            MC.search_response(pkt["payload"], websocket)
+            await MC.search_response(pkt["payload"], websocket)
 
 serv_instance = None
 async def main(host, port):
@@ -100,6 +100,7 @@ class JarvisMC:
         self.drawing = v_drawing_aid
         self.thinking = v_thinking_aid
         self.searching = v_searching_aid
+        self.send_queue = queue.Queue()
         global MC
         MC = self
         pass
@@ -132,17 +133,25 @@ class JarvisMC:
             if(agent[0] == client_id):
                 self.search_agents.remove(agent)
         print('Agent disconnected!')
-    def get_image_agent(self):
-        smallest_queue = None
+
+    def queuer(self, agent_id, output_item ):
         for agent in self.image_agents:
-            if(smallest_queue is None):
-                smallest_queue = agent
-            elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
-        return smallest_queue
-    def image_response(self, json, websocket):
+            if(agent[0] == agent_id):
+                self.send_queue.put([agent_id, output_item])
+                return True
+        for agent in self.text_agents:
+            if(agent[0] == agent_id):
+                self.send_queue.put([agent_id, output_item])
+                return True
+        return False
+    async def queue_pusher(self):
+        if( not self.send_queue.empty() ):
+            next_item = self.send_queue.get()
+            await next_item[0].send(next_item[1])
+
+    async def handle_response(self, json, websocket, agents_list, output_item):
         agent_id = websocket
-        for agent in self.image_agents:
+        for agent in agents_list:
             if(agent[0] == agent_id):
                 print("Received image response from agent. " ) #+ str(agent_id))
                 queue = agent[2].get()
@@ -153,11 +162,30 @@ class JarvisMC:
                     queue = agent[2].get()
                     if(retry_count >= queue.qsize()):
                         print("Can't find interaction in queue. Dropping response.")
+                        await self.queue_pusher()
                         return
                     retry_count += 1
-                self.drawing.queue.append([json[1], queue[2]])
+                output_item.queue.append([json[1], queue[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
+        await self.queue_pusher()
         pass
+    async def image_response(self, json, websocket):
+        await self.handle_response(json, websocket, self.image_agents, self.drawing)
+        pass
+    async def search_response(self, json, websocket):
+        await self.handle_response(json, websocket, self.search_agents, self.searching)
+        pass
+    async def text_response(self, json, websocket):
+        await self.handle_response(json, websocket, self.text_agents, self.thinking)
+        pass
+    def get_image_agent(self):
+        smallest_queue = None
+        for agent in self.image_agents:
+            if(smallest_queue is None):
+                smallest_queue = agent
+            elif(smallest_queue[2].qsize() > agent[2].qsize()):
+                smallest_queue = agent
+        return smallest_queue
     def get_text_agent(self):
         smallest_queue = None
         for agent in self.text_agents:
@@ -176,26 +204,6 @@ class JarvisMC:
         available_agent[2].put([id, json_prompt, interaction])
 
         await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-    def text_response(self, json, websocket):
-        agent_id = websocket
-        for agent in self.text_agents:
-            if(agent[0] == agent_id):
-                print(json[1])
-                print("Received text response from agent." + str(json) )#+ str(agent_id))
-                queue = agent[2].get()
-                retry_count = 0
-                while(json[0] != queue[0]):
-                    print("Response id does not match request id. Requeue.")
-                    agent[2].put(queue)
-                    queue = agent[2].get()
-                    if(retry_count >= queue.qsize()):
-                        print("Can't find interaction in queue. Dropping response.")
-                        return
-                    retry_count += 1
-                    
-                self.thinking.queue.append([json[1], queue[2]])
-                # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
-        pass
     def get_search_agent(self):
         smallest_queue = None
         for agent in self.search_agents:
@@ -204,26 +212,6 @@ class JarvisMC:
             elif(smallest_queue[2].qsize() > agent[2].qsize()):
                 smallest_queue = agent
         return smallest_queue
-    def search_response(self, json, websocket):
-        agent_id = websocket
-        for agent in self.search_agents:
-            if(agent[0] == agent_id):
-                print(json[1])
-                print("Received text response from agent." + str(json) )#+ str(agent_id))
-                queue = agent[2].get()
-                retry_count = 0
-                while(json[0] != queue[0]):
-                    print("Response id does not match request id. Requeue.")
-                    agent[2].put(queue)
-                    queue = agent[2].get()
-                    if(retry_count >= queue.qsize()):
-                        print("Can't find interaction in queue. Dropping response.")
-                        return
-                    retry_count += 1
-                    
-                self.searching.queue.append([json[1], queue[2]])
-                # Response is now available with the jarvis discord interaction object here so can add a response back to thinking_aid
-        pass
     async def search_request(self, interaction, json_prompt):
         available_agent = self.get_search_agent()
         if(available_agent is None):
@@ -233,7 +221,6 @@ class JarvisMC:
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
-
     async def image_request(self, interaction, json_prompt):
         available_agent = self.get_image_agent()
         if(available_agent is None):
@@ -251,7 +238,6 @@ class JarvisMC:
         print("Starting a text request")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
-
         await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
             # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def start_async(self):

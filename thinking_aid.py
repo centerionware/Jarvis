@@ -32,7 +32,6 @@ def enqueue_output(queue, interaction, args, remote_url):
     output = requests.post(remote_url.replace("generate", "chat"), json=args).content.decode('utf-8')
     queue.put([output,interaction])
 
-
 def get_url_from_message(message):
     if len(message.attachments) > 0:
         attachment = message.attachments[0]
@@ -51,6 +50,9 @@ class ThinkingAid:
         self.client=client
         self.url = url
         self.MC = None
+        self.prompt_from_file = None
+        with (open(os.path.join(os.path.dirname(__file__), "base_prompt.txt"), "r")) as f:
+            self.prompt_from_file = f.read()
     def set_MC(self, MC):
         self.MC = MC
     def __del__(self):
@@ -71,11 +73,15 @@ class ThinkingAid:
             if(message.content.strip() != ""):
                 new_messages.append(message)
         return new_messages
-    async def launch(self, command, url, interaction, old_messages, model):
+    async def launch(self, command, url, interaction, old_messages, model, base_system_prompt=None):
         client_user = self.client
         old_messages = self.look_for_forget_in_messages(old_messages)
         self.command = command
         args = {}
+        
+        if(base_system_prompt == None):
+            # The actual base prompt should probably be moved to a file, then loaded with this object is created and accessed as self.prompt_from_file or somesuch
+            base_system_prompt = self.prompt_from_file
         
         formatted_messages = []
         any_urls = False
@@ -132,25 +138,7 @@ class ThinkingAid:
             }
         # find if .topic is in the interaction.channel
         # Create a base system prompt that's multilines
-        base_system_prompt = """
-You are chatbot that generates text based on the messages you send it.
-You will do your best not to answer illegal or immoral questions.
-You will do your best to answer questions that are asked of you, and strive to be perfect.
-
-The following is a topic for the current room:
-```
-%topic%
-```
-Strive to be courteous and polite, and to be a good friend to all.
-Explain in a level of detail that is appropriate for the situation.
-Ignore criticism, and do not take it personally.
-Do not use foul language, and do not be rude or aggressive.
-Do not spam, and do not post inappropriate content.
-Do not post links to inappropriate content, illegal content, pirated content, malware, phishing sites.
-Do not post links to sites that are not safe for work, school, home, life, or the universe.
-Focus on the topic as long as it doesn't violate the rules.
-You respond to requests from {{user}} as whatever the second set of {{}} in the topic examples would.
-"""
+        
         try:
             if(interaction.channel.topic is not None and any_urls is False):
                 nbase_system_prompt = base_system_prompt.replace("%topic%", interaction.channel.topic)
