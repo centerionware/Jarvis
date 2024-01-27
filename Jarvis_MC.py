@@ -210,7 +210,7 @@ class JarvisMC:
             raise Exception("No text agents available")
         print("Starting a text request")
         id = str(uuid.uuid4())
-        await self.queuer(available_agent, json_prompt, interaction, "TextRequest"
+        await self.queuer(available_agent, json_prompt, interaction, "TextRequest")
         # available_agent[2].put([id, json_prompt, interaction])
 
         # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
