@@ -106,10 +106,7 @@ class JarvisMC:
         pass
     # Function to create websocket connection
     def handle_capabilities(self, json, websocket):
-        print('received json: ' + str(json))
         client_id = websocket
-        print('client_id: ' + str(client_id))
-
         for cap in json["capabilities"]:
             if(cap == "ImageRequest"):
                 self.image_agents.append([client_id, json, queue.Queue()])
@@ -166,12 +163,11 @@ class JarvisMC:
                 queue = agent[2].get()
                 retry_count = 0
                 while(json[0] != queue[0]):
-                    print("Response id does not match request id. Requeue.")
                     agent[2].put(queue)
                     queue = agent[2].get()
                     if(retry_count >= queue.qsize()):
-                        print("Can't find interaction in queue. Dropping response.")
                         await self.queue_pusher()
+                        raise Exception("Can't find interaction in queue. Dropping response.")
                         return
                     retry_count += 1
                 output_item.queue.append([json[1], queue[2]])
@@ -187,69 +183,39 @@ class JarvisMC:
     async def text_response(self, json, websocket):
         await self.handle_response(json, websocket, self.text_agents, self.thinking)
         pass
+    def get_a_queue(self, agents):
+        smallest_queue = None
+        for agent in agents:
+            if(smallest_queue is None):
+                smallest_queue = agent
+            elif(smallest_queue[2].qsize() > agent[2].qsize()):
+                smallest_queue = agent
+        return smallest_queue
     def get_image_agent(self):
-        smallest_queue = None
-        for agent in self.image_agents:
-            if(smallest_queue is None):
-                smallest_queue = agent
-            elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
-        return smallest_queue
+        return self.get_a_queue(self.image_agents)
     def get_text_agent(self):
-        smallest_queue = None
-        for agent in self.text_agents:
-            if(smallest_queue is None):
-                smallest_queue = agent
-            elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
-        return smallest_queue
+        return self.get_a_queue(self.text_agents)
+    def get_search_agent(self):
+        return self.get_a_queue(self.search_agents)
     async def text_request(self, interaction, json_prompt):
         available_agent = self.get_text_agent()
         if(available_agent is None):
-            print("No text agents available")
             raise Exception("No text agents available")
-        print("Starting a text request")
         id = str(uuid.uuid4())
         await self.queuer(available_agent, json_prompt, interaction, "TextRequest")
-        # available_agent[2].put([id, json_prompt, interaction])
-
-        # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-    def get_search_agent(self):
-        smallest_queue = None
-        for agent in self.search_agents:
-            if(smallest_queue is None):
-                smallest_queue = agent
-            elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
-        return smallest_queue
     async def search_request(self, interaction, json_prompt):
         available_agent = self.get_search_agent()
         if(available_agent is None):
-            print("No text agents available")
             raise Exception("No text agents available")
-        print("Starting a text request")
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction])
         await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def image_request(self, interaction, json_prompt):
         available_agent = self.get_image_agent()
         if(available_agent is None):
-            print("No image agents available")
             raise Exception("No image agents available")
-        print ("Starting an image request")
         await self.queuer(available_agent, json_prompt, interaction, "ImageRequest")
-        # available_agent[2].put([id, json_prompt, interaction])
-        # await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
-    async def text_request(self, interaction, json_prompt):
-        available_agent = self.get_text_agent()
-        if(available_agent is None):
-            print("No text agents available")
-            raise Exception("No text agents available")
-        print("Starting a text request")
-        id = str(uuid.uuid4())
-        available_agent[2].put([id, json_prompt, interaction])
-        await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
-            # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
+
     async def start_async(self):
         config = os.environ
         host = "0.0.0.0"
@@ -261,20 +227,3 @@ class JarvisMC:
         print ("Starting MC server")
         await startit(host, port)
         print ("MC Server started")
-    def start(self):
-        config = os.environ
-        host = "0.0.0.0"
-        port = 5000
-        if hasattr(config, 'MC_HOST'):
-            host = config.MC_HOST
-        if hasattr(config, 'MC_PORT'):
-            port = config.MC_PORT
-        self.server_thread = threading.Thread(target=startit, args=(host, port))
-        self.server_thread.daemon = True
-        self.server_thread.start()
-        pass
-    def stop(self):
-        if(self.server_thread is not None):
-            serv_instance.stop()
-            self.server_thread.join()
-            self.server_thread = None 
