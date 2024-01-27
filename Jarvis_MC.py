@@ -151,7 +151,7 @@ class JarvisMC:
                     return True
         
         agent_id[2].put([id, json_prompt, interaction])
-        await available_agent[0].send(output)
+        await agent_id[0].send(output)
         return False
     async def queue_pusher(self):
         if( not self.send_queue.empty() ):
