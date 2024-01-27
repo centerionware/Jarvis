@@ -161,8 +161,6 @@ async def on_message(message):
             await interaction.response.defer(thinking=True)
             await interaction.followup.send("Something broke!: " + str(e) )
 
-async def send_as_file(interaction, raw_data: BytesIO, filename):
-
 async def send_result(interaction, arguments: str):
     print ("Sending result: " + arguments)
     messages = []

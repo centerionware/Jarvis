@@ -267,4 +267,4 @@ class JarvisMC:
         if(self.server_thread is not None):
             serv_instance.stop()
             self.server_thread.join()
-            self.server_thread = None
+            self.server_thread = None 
