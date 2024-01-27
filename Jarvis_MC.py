@@ -156,7 +156,7 @@ class JarvisMC:
     async def queue_pusher(self):
         if( not self.send_queue.empty() ):
             next_item = self.send_queue.get()
-            await next_item[0].send(next_item[1])
+            await next_item[0][0].send(next_item[1])
 
     async def handle_response(self, json, websocket, agents_list, output_item):
         agent_id = websocket
