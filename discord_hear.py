@@ -78,11 +78,18 @@ async def send_image_result(interaction, image_list):
     elif(type(interaction) is discord.Message):
         await interaction.channel.send(files=image_list)
 
+g_search_prompt = None
+# with (open(os.path.join(os.path.dirname(__file__), "base_prompt.txt"), "r")) as f:
+with open(os.path.join(os.path.dirname(__file__), "search_prompt.txt"), "r") as f:
+    g_search_prompt = f.read()
+
+
 @tasks.loop(seconds=1.0)
 async def hear():
     global thinking
     global drawing
     global searching
+    global g_search_prompt
     drawing.hear()
     thinking.hear()
     spinner()
@@ -90,7 +97,8 @@ async def hear():
         for elem in searching.queue:
             print ("Sending a search result.")
             # await send_result(elem[1], elem[0]) 
-            await thinking.launch(elem[0] + "\nsummerize the information without adding your own thoughts. Don't mention the names of search engines unless it's relevant to the query. Use high quality results from the data provided. focus on the initial query. Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. Focus on the query. Do not provide links not closely associated to the data or not from the data. ", False, elem[1], [], "auto")
+            d_prompt = g_search_prompt #  "summerize the information without adding your own thoughts. Don't mention the names of search engines unless it's relevant to the query. Use high quality results from the data provided. focus on the initial query. Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include link "
+            await thinking.launch(elem[0] , False, elem[1], [], "auto", d_promt)
             
             # await thinking.launch(elem[0] + "\nsummerize the information. Use high quality results from the data provided. focus on the initial query. Include links to relevant sources based on the query and the data provided.", False, elem[1], [], "auto")
             # This should be json search results, 
