@@ -134,8 +134,9 @@ class JarvisMC:
                 self.search_agents.remove(agent)
         print('Agent disconnected!')
 
-    async def queuer(self, agent_id, json_prompt, interaction ):
-        output = json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})
+    async def queuer(self, agent_id, json_prompt, interaction, output_type ):
+        id = str(uuid.uuid4())
+        output = json.dumps({"type": output_type, "payload": {"id":id,"prompt":json_prompt}})
         for agent in self.image_agents:
             if(agent[0] == agent_id[0]):
                 if(agent[2].qsize() > 0):
@@ -148,7 +149,7 @@ class JarvisMC:
                     self.send_queue.put([agent_id, output])
                     agent_id[2].put([id, json_prompt, interaction])
                     return True
-
+        
         agent_id[2].put([id, json_prompt, interaction])
         await available_agent[0].send(output)
         return False
@@ -209,7 +210,7 @@ class JarvisMC:
             raise Exception("No text agents available")
         print("Starting a text request")
         id = str(uuid.uuid4())
-        await self.queuer(available_agent, json_prompt, interaction)
+        await self.queuer(available_agent, json_prompt, interaction, "TextRequest"
         # available_agent[2].put([id, json_prompt, interaction])
 
         # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
@@ -236,8 +237,7 @@ class JarvisMC:
             print("No image agents available")
             raise Exception("No image agents available")
         print ("Starting an image request")
-        id = str(uuid.uuid4())
-        await self.queuer(available_agent, json_prompt, interaction)
+        await self.queuer(available_agent, json_prompt, interaction, "ImageRequest")
         # available_agent[2].put([id, json_prompt, interaction])
         # await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def text_request(self, interaction, json_prompt):
