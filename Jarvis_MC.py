@@ -144,7 +144,7 @@ class JarvisMC:
                     return True
         for agent in self.text_agents:
             if(agent[0] == agent_id[0]):
-                if(agent[2].qsize() > 0)
+                if(agent[2].qsize() > 0):
                     self.send_queue.put([agent_id, output])
                     agent_id[2].put([id, json_prompt, interaction])
                     return True
