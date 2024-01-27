@@ -134,7 +134,7 @@ class JarvisMC:
                 self.search_agents.remove(agent)
         print('Agent disconnected!')
 
-    def queuer(self, agent_id, json_prompt, interaction ):
+    async def queuer(self, agent_id, json_prompt, interaction ):
         output = json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})
         for agent in self.image_agents:
             if(agent[0] == agent_id[0]):
@@ -209,7 +209,7 @@ class JarvisMC:
             raise Exception("No text agents available")
         print("Starting a text request")
         id = str(uuid.uuid4())
-        self.queuer(available_agent, json_prompt, interaction)
+        await self.queuer(available_agent, json_prompt, interaction)
         # available_agent[2].put([id, json_prompt, interaction])
 
         # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
@@ -237,7 +237,7 @@ class JarvisMC:
             raise Exception("No image agents available")
         print ("Starting an image request")
         id = str(uuid.uuid4())
-        self.queuer(available_agent, json_prompt, interaction)
+        await self.queuer(available_agent, json_prompt, interaction)
         # available_agent[2].put([id, json_prompt, interaction])
         # await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def text_request(self, interaction, json_prompt):
