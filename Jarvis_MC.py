@@ -134,15 +134,23 @@ class JarvisMC:
                 self.search_agents.remove(agent)
         print('Agent disconnected!')
 
-    def queuer(self, agent_id, output_item ):
+    def queuer(self, agent_id, json_prompt, interaction ):
+        output = json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}})
         for agent in self.image_agents:
-            if(agent[0] == agent_id):
-                self.send_queue.put([agent_id, output_item])
-                return True
+            if(agent[0] == agent_id[0]):
+                if(agent[2].qsize() > 0)
+                    self.send_queue.put([agent_id, output])
+                    agent_id[2].put([id, json_prompt, interaction])
+                    return True
         for agent in self.text_agents:
-            if(agent[0] == agent_id):
-                self.send_queue.put([agent_id, output_item])
-                return True
+            if(agent[0] == agent_id[0]):
+                if(agent[2].qsize() > 0)
+                    self.send_queue.put([agent_id, output])
+                    agent_id[2].put([id, json_prompt, interaction])
+                    return True
+
+        agent_id[2].put([id, json_prompt, interaction])
+        await available_agent[0].send(output)
         return False
     async def queue_pusher(self):
         if( not self.send_queue.empty() ):
@@ -201,9 +209,10 @@ class JarvisMC:
             raise Exception("No text agents available")
         print("Starting a text request")
         id = str(uuid.uuid4())
-        available_agent[2].put([id, json_prompt, interaction])
+        self.queuer(available_agent, json_prompt, interaction)
+        # available_agent[2].put([id, json_prompt, interaction])
 
-        await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
+        # await available_agent[0].send(json.dumps({"type": "TextRequest", "payload": {"id":id,"prompt":json_prompt}}))
     def get_search_agent(self):
         smallest_queue = None
         for agent in self.search_agents:
@@ -228,8 +237,9 @@ class JarvisMC:
             raise Exception("No image agents available")
         print ("Starting an image request")
         id = str(uuid.uuid4())
-        available_agent[2].put([id, json_prompt, interaction])
-        await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
+        self.queuer(available_agent, json_prompt, interaction)
+        # available_agent[2].put([id, json_prompt, interaction])
+        # await available_agent[0].send(json.dumps({"type": "ImageRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def text_request(self, interaction, json_prompt):
         available_agent = self.get_text_agent()
         if(available_agent is None):
