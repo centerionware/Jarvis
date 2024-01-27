@@ -5,3 +5,4 @@ proxy
 websocket-client
 websockets[server]
 nest-asyncio
+aiohttp
