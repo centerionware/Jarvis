@@ -3,6 +3,9 @@ Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
 Agent branch. This branch provides an agent that will connect back to the main bot to provide processing power. This allows a distributed backend built to scale.
 
+# Import Running in Windows Note:
+ Run it from the ubuntu bash shell in WSL, not from the docker inside of powershell, or you will have a bad time. There's filesystem translation things that happen otherwise, and just don't do it. You may also run into out of space errors when you clearly have a lot of space available. Again, use docker from inside of ubuntu bash shell and not from the windows layer of wsl.
+
 # 0xJarvis
 * Ollama is running in WSL in docker with LiteLLM (Currently not used) with Jarvis (the discord.py based bot) on RX3080 with an AMD 2700x cpu on windows 11.
 * ComfyUI runs based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui to work on legacy AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image is ages.) 
