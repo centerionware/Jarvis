@@ -10,19 +10,19 @@ async def http_handler(request):
         fcont = f.read()
     if(request.method == "POST"):
         pass
-    return web.Response(text=fcont)
+    return web.Response(text=fcont, content_type='text/html')
 
 async def css_handler(request):
     fcont = ""
     with open("/app/webui.css", "r") as f:
         fcont = f.read()
-    return web.Response(text=fcont)
+    return web.Response(text=fcont,content_type='text/css')
 
 async def js_handler(request):
     fcont = ""
     with open("/app/webui.js", "r") as f:
         fcont = f.read()
-    return web.Response(text=fcont)
+    return web.Response(text=fcont,content_type='text/javascript')
 
 async def websocket_handler(request):
     ws = web.WebSocketResponse()
