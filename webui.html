@@ -1,12 +1,15 @@
+<!DOCTYPE html>
 <html>
     <head>
         <link rel="stylesheet" href="/webui.css"/>
-        <script type="text/javascript" src="/webui.js" />
+        <script type="text/javascript" src="/webui.js" ></script>
     </head>
     <body>
-        <form class="query_form" target="/search" onsubmit="return websocket_submit()">
-            <input class="query_input" type="text" name="q" />
-        </form>
-        <div class="response"></div>
+        <div class="query_form">
+            <form target="/search" onsubmit="return websocket_submit(); ">
+                <input class="query_input" type="text" name="q" id="q" />
+            </form>
+        </div>
+        <div class="response" id="response"></div>
     </body>
 </html>

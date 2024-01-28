@@ -9,12 +9,15 @@
 
 }
 
+.query_form {
+    position: absolute;
+    top: 49%;
+    left: 10%;
+    width:80%;
+}
 .query_input {
     /* Put it at the center of the screen, make it 80% width, 1.5rem height, round the corners heavily */
-    position: absolute;
-    top: 50%-1.25rem;
-    left: 10%;
-    width: 80%;
+    width:100%;
     height: 2.5rem;
     border-radius: 1rem;
     /* Center the text inside the input */
@@ -23,14 +26,37 @@
     font-size: 1.5rem;
     
 }
-.query_input .activated {
-    /* Position it back relative, now the form should take up the top of the screen*/
-    width:80%;
+/* .activated {
+    /* Position it back relative, now the form should take up the top of the screen*
+    width:95%;
+    top:0%;
     position:relative;
     padding-top:1.25rem;
     padding-bottom:1.25rem;
-    /* align it in the center */
-    margin-left:9%;  
-    margin-right:9%;
+    /* align it in the center *
+    left: 0;
+    padding-left:1.5rem;
+    padding-right:1.5rem;
+} */
 
+@keyframes slideUp {
+    0% {
+      transform: translateY(100%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+.query_form.activated {
+    animation: slideUp 0.3s ease-out forwards;
+    transition: width 0.3s ease-out;
+    width: 95%;
+    top: 0;
+    position: relative;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+    left: 0;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }

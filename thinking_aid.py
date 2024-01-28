@@ -73,7 +73,7 @@ class ThinkingAid:
             if(message.content.strip() != ""):
                 new_messages.append(message)
         return new_messages
-    async def launch(self, command, url, interaction, old_messages, model, base_system_prompt=None):
+    async def launch(self, command, url, interaction, old_messages, model="auto", base_system_prompt=None):
         client_user = self.client
         old_messages = self.look_for_forget_in_messages(old_messages)
         self.command = command
