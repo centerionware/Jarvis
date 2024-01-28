@@ -29,7 +29,8 @@ Adding search capabilities. searxng can be used to provide an Agent with the cap
 These can be changed in case you'd prefer to use another comfyui or ollama server
 * COMFYUI_URL = "localhost:8188"
 * OLLAMA_URL = "http://localhost:11434/api/generate"
-
+If you're running your own jarvis main node controller
+* MNC_URL = "wss://register.jarvis.ai.centerionware.com" (Eg for localhost only: `ws://localhost/` )
 ## Launching example:
 ```sh
 docker login registry.gitlab.centerionware.com
