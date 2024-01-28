@@ -2,11 +2,15 @@
 import aiohttp
 from aiohttp import web, WSCloseCode
 import asyncio
-
+import nest_asyncio
 
 async def http_handler(request):
-    return web.Response(text='Hello, world')
-
+    fcont = ""
+    with open("/webui.html", "r") as f:
+        fcont = f.read()
+    if(request.method == "POST"):
+        pass
+    return web.Response(text=fcont)
 
 async def websocket_handler(request):
     ws = web.WebSocketResponse()
@@ -23,24 +27,28 @@ async def websocket_handler(request):
 
     return ws
 
-
 def create_runner():
     app = web.Application()
     app.add_routes([
         web.get('/',   http_handler),
+        web.get('/search',   http_handler),
         web.get('/ws', websocket_handler),
     ])
     return web.AppRunner(app)
 
-
-async def start_server(host="127.0.0.1", port=1337):
+async def start_server(host="0.0.0.0", port=1337):
     runner = create_runner()
     await runner.setup()
     site = web.TCPSite(runner, host, port)
     await site.start()
 
+async def startit():
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(start_server)
+    return loop
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(start_server())
-    loop.run_forever()
+    startit().run_forever()
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(start_server())
+    # loop.run_forever()
