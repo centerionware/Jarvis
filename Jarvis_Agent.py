@@ -33,7 +33,7 @@ class JarvisAgent:
         while(True):
             await asyncio.sleep(backoff)
             try:
-                async with websockets.connect("wss://register.jarvis.ai.centerionware.com") as websocket:
+                async with websockets.connect(config.get("MNC_URL", "wss://register.jarvis.ai.centerionware.com")) as websocket:
                     print ("Connected")
                     self.websocket = websocket
                     await websocket.send(json.dumps({"type": "Capabilities", "payload": {"capabilities": self.capabilities}}))
