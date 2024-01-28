@@ -30,9 +30,11 @@ These can be changed in case you'd prefer to use another comfyui or ollama serve
 ## Launching example:
 ```sh
 docker login registry.gitlab.centerionware.com
-docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -v '/mnt/jarvis:/mnt/jarvis' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
 ```
-Note: If you wish to add searxng, docker in docker can be used. Simply mount /var/run/docker.sock to the container and the image will launch searxng, and connect the containers on a private network so the bot can use the api. this could be considered a security risk. Should probably consider migrating to podman in docker for the searxng, but this is already in place so whatever.
+
+Note: If you wish to add searxng, docker in docker can be used. Simply mount /var/run/docker.sock to the container and the image will launch searxng, and connect the containers on a private network so the bot can use the api. this could be considered a security risk. Should probably consider migrating to podman in docker for the searxng, but this is already in place so whatever. Also ensure `-v /mnt/jarvis:/mnt/jarvis` is used so the pre-configured searxng configuration file can be used which enables json results (should be the only change ever to the default).
+
 
 ```sh
 docker login registry.gitlab.centerionware.com
