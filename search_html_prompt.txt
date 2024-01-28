@@ -7,4 +7,5 @@ Format results as if they'll be inserted into an html page.
 Format the result links as html and not m2.
 <a href="https://location.com/">link description.</a>
 Format your paragraphs with html paragraphs.
-Do not use information not found in the dataset. Use only the links provided in the dataset and the information from the dataset.
+Use only links from the data and the description of those links from the data provided.
+error 404 page does not exist - you included links that don't exist from the data. please don't do that.

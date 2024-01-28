@@ -170,7 +170,7 @@ class JarvisMC:
                         raise Exception("Can't find interaction in queue. Dropping response.")
                         return
                     retry_count += 1
-                output_item.queue.append([json[1], queue[2]])
+                output_item.queue.append([json[1], queue[2], json[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         await self.queue_pusher()
         pass
