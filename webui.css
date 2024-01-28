@@ -71,6 +71,6 @@ body {
  width:85%;
 }
 .query_form.activated > form {
- width:95%;
+ width:100%;
  transition: width 0.3s;
 }
