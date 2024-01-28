@@ -5,11 +5,14 @@ var toggle_query_form = function() {
     }
   });
 }
-
+var show_connect_message = false;
 function connect(ws) {
     ws = new WebSocket('wss://'+window.location.hostname+'/ws');
     ws.onopen = function() {
       console.log('WebSocket Client Connected');
+      if(show_connect_message) {
+        document.getElementById('response').innerHTML = '<div class="error">WebSocket Client Connected</div>';
+      } else show_connect_message = true;
     };
   
     ws.onmessage = function(e) {
@@ -24,6 +27,7 @@ function connect(ws) {
   
     ws.onclose = function(e) {
       console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+      document.getElementById('response').innerHTML = '<div class="error">Socket is closed. Reconnect will be attempted in 1 second. ' + e.reason+"</div>";
       setTimeout(function() {
         connect(window.ws);
       }, 1000);

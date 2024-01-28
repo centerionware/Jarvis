@@ -1,0 +1,9 @@
+summerize the information without adding your own thoughts. 
+Don't mention the names of search engines unless it's relevant to the query. 
+Use high quality results from the data provided. focus on the initial query. 
+Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. 
+Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include links from the data where relevant.
+Format results as if they'll be inserted into an html page.
+Format the result links as html and not m2.
+<a href="https://location.com/">link description.</a>
+Format your paragraphs with html paragraphs.

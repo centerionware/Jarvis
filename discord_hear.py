@@ -12,7 +12,8 @@ import io
 import logging
 import Jarvis_MC
 import base64
-
+import webui
+import aiohttp
 # parser = argparse.ArgumentParser("python jarvis.py -i \"Hello World\" -v \"Jarvis\"")
 # parser.add_argument("-u", help="Url", type=str, default="http://localhost:11434/api/generate")
 # parser.add_argument("-igu", help="ComfyUI Url", type=str, default="localhost:8188")
@@ -82,7 +83,9 @@ g_search_prompt = None
 # with (open(os.path.join(os.path.dirname(__file__), "base_prompt.txt"), "r")) as f:
 with open(os.path.join(os.path.dirname(__file__), "search_prompt.txt"), "r") as f:
     g_search_prompt = f.read()
-
+html_search_prompt = None
+with open(os.path.join(os.path.dirname(__file__), "search_html_prompt.txt"), "r") as f:
+    html_search_prompt = f.read()
 
 @tasks.loop(seconds=1.0)
 async def hear():
@@ -98,6 +101,8 @@ async def hear():
             print ("Sending a search result.")
             # await send_result(elem[1], elem[0]) 
             d_prompt = g_search_prompt #  "summerize the information without adding your own thoughts. Don't mention the names of search engines unless it's relevant to the query. Use high quality results from the data provided. focus on the initial query. Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include link "
+            if(type(elem[1]) is aiohttp.web.WebSocketResponse):
+                d_prompt = html_search_prompt
             await thinking.launch(elem[0] + d_prompt, False, elem[1], [], "auto", d_prompt)
             
             # await thinking.launch(elem[0] + "\nsummerize the information. Use high quality results from the data provided. focus on the initial query. Include links to relevant sources based on the query and the data provided.", False, elem[1], [], "auto")
@@ -144,12 +149,14 @@ async def on_ready():
     global MC
     global client_user
     global client
+    global webui
     await tree.sync()
     hear.start()
     client_user = client.user
     print(f'We have logged in as {client.user}')
     
     client.loop.create_task( MC.start_async() )
+    await webui.start_server()
 
 @client.event
 async def on_message(message):
@@ -174,7 +181,14 @@ async def send_result(interaction, arguments: str):
     messages = []
     wrapped = [arguments] #textwrap.wrap(arguments)
     t_msg = ""
-
+    if(type(interaction) is not discord.Interaction and type(interaction) is not discord.Message):
+        print(type(interaction))
+        if(type(interaction) is aiohttp.web.WebSocketResponse):
+            await interaction.send_str(arguments)
+        else:
+            print("Unknown interaction type")
+            #await interaction.send_str(arguments)
+        return
     if( len(arguments) > 4000 ):
         file = [discord.File(io.BytesIO(arguments.encode('utf-8')), interaction.user.global_name+'long_result_utf8.txt')]
         return await send_image_result(interaction, file)
@@ -302,7 +316,7 @@ drawing = drawing_aid.DrawingAid(client, comfyui_url)
 searching = searching_aid.SearchingAid(client, search_url)
 
 MC = Jarvis_MC.JarvisMC(drawing, thinking, searching)
-
+webui = webui.WebUI(drawing, thinking, searching)
 thinking.set_MC(MC)
 drawing.set_MC(MC)
 searching.set_MC(MC)
