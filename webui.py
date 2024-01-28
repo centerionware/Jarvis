@@ -6,10 +6,22 @@ import nest_asyncio
 
 async def http_handler(request):
     fcont = ""
-    with open("/webui.html", "r") as f:
+    with open("/app/webui.html", "r") as f:
         fcont = f.read()
     if(request.method == "POST"):
         pass
+    return web.Response(text=fcont)
+
+async def css_handler(request):
+    fcont = ""
+    with open("/app/webui.css", "r") as f:
+        fcont = f.read()
+    return web.Response(text=fcont)
+
+async def js_handler(request):
+    fcont = ""
+    with open("/app/webui.js", "r") as f:
+        fcont = f.read()
     return web.Response(text=fcont)
 
 async def websocket_handler(request):
@@ -31,6 +43,8 @@ def create_runner():
     app = web.Application()
     app.add_routes([
         web.get('/',   http_handler),
+        web.get('/webui.css',   css_handler),
+        web.get('/webui.js',   js_handler),
         web.get('/search',   http_handler),
         web.get('/ws', websocket_handler),
     ])
@@ -48,7 +62,7 @@ async def startit():
     return loop
 
 if __name__ == "__main__":
-    startit().run_forever()
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(start_server())
-    # loop.run_forever()
+    #startit().run_forever()
+     loop = asyncio.get_event_loop()
+     loop.run_until_complete(start_server())
+     loop.run_forever()
