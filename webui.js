@@ -5,12 +5,21 @@ var toggle_query_form = function() {
     }
   });
 }
+// listen for popstate event, fired e.g. after using browser back button
+window.addEventListener('popstate', (event) => updateDisplay(event.state));
 
-window.onpopstate = function(event) {
-  document.getElementById('response').innerHTML = event.state.data;
-  toggle_query_form();
-  //alert("location: " + document.location + ", state: " + JSON.stringify(event.state));
-};
+// listen for load event, in case we navigate away and then go back
+window.addEventListener('load', () => updateDisplay(history.state), false);
+
+function updateDisplay(state) {
+  if (state) {
+    document.getElementById('response').innerHTML = state.data;
+    toggle_query_form();
+  } else {
+    
+  }
+}
+
 
 var show_connect_message = false;
 function connect(ws) {
