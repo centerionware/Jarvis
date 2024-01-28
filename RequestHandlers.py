@@ -26,12 +26,12 @@ def text_threaded_query(TR_OBJ, args):
                     new_args["images"].append(image)
         output = requests.post(remote_url, json=new_args).content.decode('utf-8')
         print("Received output from llava: " + str(output))
-        queue.put([id,output])
+        queue.put([id, output, args])
         return
     print("Querying ollama")
     output = requests.post(remote_url.replace("generate", "chat"), json=args).content.decode('utf-8')
     print("received output from mistral")
-    queue.put([id, output])
+    queue.put([id, output, args])
 class TextRequest:
     def __init__(self, prompt):
         self.id = prompt["id"]
@@ -53,7 +53,7 @@ def image_threaded_query(IR_OBJ, args):
     url = "localhost:8188"
     client = comfyui_api.Client(url)
     output = client.get_images(client.ws, args)
-    queue.put([id,output])
+    queue.put([id, output, args])
     client.ws.close()
 
 class ImageRequest:
@@ -79,7 +79,7 @@ def search_threaded_query(TR_OBJ, args):
     print("Querying searxng")
     output = requests.post(remote_url, data=args).content.decode('utf-8')
     print("received output from searxng")
-    queue.put([id, output])
+    queue.put([id, output, args])
 
 class SearchRequest:
     def __init__(self, prompt):
