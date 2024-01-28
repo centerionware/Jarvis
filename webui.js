@@ -48,6 +48,7 @@ var websocket_submit = function() {
     window.ws.send(JSON.stringify({
         'message': document.getElementById('q').value
     }));
+    document.getElementById('q').placeholder = document.getElementById('q').value;
     document.getElementById('q').value = '';
     // Find the object with the class query_form and add the class 'activated' to it if it doesn't have it
     toggle_query_form();
