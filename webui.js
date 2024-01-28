@@ -5,6 +5,13 @@ var toggle_query_form = function() {
     }
   });
 }
+
+window.onpopstate = function(event) {
+  document.getElementById('response').innerHTML = event.state.data;
+  toggle_query_form();
+  //alert("location: " + document.location + ", state: " + JSON.stringify(event.state));
+};
+
 var show_connect_message = false;
 function connect(ws) {
     ws = new WebSocket('wss://'+window.location.hostname+'/ws');
@@ -18,7 +25,7 @@ function connect(ws) {
     ws.onmessage = function(e) {
       // Dump the message into body->response
       document.getElementById('response').innerHTML = e.data;
-
+      history.pushState({data: e.data}, document.getElementById('q').placeholder, '?q='+document.getElementById('q').placeholder);
       toggle_query_form();
 
       document.querySelector(".query_input").value = "";
@@ -50,6 +57,7 @@ var websocket_submit = function() {
     }));
     document.getElementById('q').placeholder = document.getElementById('q').value;
     document.getElementById('q').value = '';
+    
     // Find the object with the class query_form and add the class 'activated' to it if it doesn't have it
     toggle_query_form();
     return false
