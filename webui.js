@@ -34,6 +34,11 @@ function connect(ws) {
   
     ws.onmessage = function(e) {
       // Dump the message into body->response
+      if(e.data == "Searching..."){ 
+        document.getElementById('response').innerHTML = '<div class="error">Searching...</div>';
+        toggle_query_form();
+        return
+      }
       loaded = JSON.parse(e.data);
       document.getElementById('response').innerHTML = loaded.result;
       the_prompt = loaded.prompt;
