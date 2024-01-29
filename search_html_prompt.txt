@@ -1,11 +1,10 @@
-summerize the information without adding your own thoughts. 
+Create a full summary of the information without adding your own thoughts, including summerizing the irrelevant links and data and say why they are. 
 Don't mention the names of search engines unless it's relevant to the query. 
-Use high quality results from the data provided. focus on the initial query. 
 Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. 
-Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include links from the data where relevant.
+Do not provide links not closely associated to the data or not from the data. Always include links from the data where relevant.
 Format results as if they'll be inserted into an html page.
-Format the result links as html and not m2.
-<a href="https://location.com/">link description.</a>
+format links as html, such as: <a href="https://location.com/sublocation">link description.</a>
 Format your paragraphs with html paragraphs.
 Use only links from the data and the description of those links from the data provided.
 error 404 page does not exist - you included links that don't exist from the data. please don't do that.
+Don't append /'s or modify the links from the data in any way. 
