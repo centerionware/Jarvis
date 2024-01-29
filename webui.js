@@ -23,28 +23,30 @@ function parseResponse(data) {
     document.getElementById('response').innerHTML = loaded.result;
     the_prompt = JSON.parse(loaded.prompt);
     content = JSON.parse(the_prompt.messages[0].content)
-    searxng_div = document.createElement('div');
-    new_header = document.createElement('h3');
-    new_header.innerHTML = "Non-AI Results from SearXNG:"
-    searxng_div.appendChild(new_header);
-    content.results.forEach((el) => { 
-      new_div = document.createElement('div');
-      new_link = document.createElement('a');
-      new_link.href = el.url;
-      new_link.innerHTML = el.title;
-      new_paragraph = document.createElement('p');
-      new_paragraph.innerHTML = el.content;
-      new_div.appendChild(new_link);
-      new_div.appendChild(new_paragraph);
-      new_img = document.createElement('img');
-      new_img.src = el.img_src != null ? el.img_src : "";
-      new_div.appendChild(new_img);
-      searxng_div.appendChild(new_div);
-    });
-    document.getElementById('response').appendChild(searxng_div);
+    parseSearchResults(content);
     toggle_query_form();
 }
-
+function parseSearchResults(content) {
+  searxng_div = document.createElement('div');
+  new_header = document.createElement('h3');
+  new_header.innerHTML = "Non-AI Results from SearXNG:"
+  searxng_div.appendChild(new_header);
+  content.results.forEach((el) => { 
+    new_div = document.createElement('div');
+    new_link = document.createElement('a');
+    new_link.href = el.url;
+    new_link.innerHTML = el.title;
+    new_paragraph = document.createElement('p');
+    new_paragraph.innerHTML = el.content;
+    new_div.appendChild(new_link);
+    new_div.appendChild(new_paragraph);
+    new_img = document.createElement('img');
+    new_img.src = el.img_src != null ? el.img_src : "";
+    new_div.appendChild(new_img);
+    searxng_div.appendChild(new_div);
+  });
+  document.getElementById('response').appendChild(searxng_div);
+}
 var show_connect_message = false;
 function connect(ws) {
     ws = new WebSocket('wss://'+window.location.hostname+'/ws');
@@ -63,10 +65,13 @@ function connect(ws) {
         toggle_query_form();
         return
       }
-      parseResponse(e.data);
-      history.pushState({data: e.data}, document.getElementById('q').placeholder, '?q='+document.getElementById('q').placeholder);
-
-      document.querySelector(".query_input").value = "";
+      loaded = JSON.parse(e.data);
+      
+      arseResponse(e.data);
+      if( loaded.status == "completed" ) {
+        history.pushState({data: e.data}, document.getElementById('q').placeholder, '?q='+document.getElementById('q').placeholder);
+        document.querySelector(".query_input").value = "";
+      }
       console.log('Message:', e.data);
     };
   

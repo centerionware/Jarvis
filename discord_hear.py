@@ -103,6 +103,8 @@ async def hear():
             d_prompt = g_search_prompt #  "summerize the information without adding your own thoughts. Don't mention the names of search engines unless it's relevant to the query. Use high quality results from the data provided. focus on the initial query. Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include link "
             if(type(elem[1]) is aiohttp.web.WebSocketResponse):
                 d_prompt = html_search_prompt
+            output = {"result": elem[0], "status": "quick-results"}
+            await elem[1].send_str(json.dumps(output))
             await thinking.launch(elem[0] + elem[0] + elem[0] + d_prompt, False, elem[1], [], "auto", d_prompt)
             
             # await thinking.launch(elem[0] + "\nsummerize the information. Use high quality results from the data provided. focus on the initial query. Include links to relevant sources based on the query and the data provided.", False, elem[1], [], "auto")
@@ -190,7 +192,7 @@ async def send_result(interaction, arguments: str, prompt:str = None):
             prompt["messages"][0]["content"] = prompt["messages"][0]["content"].replace(g_search_prompt, "").replace(html_search_prompt, "")
             head, sep, tail = prompt["messages"][0]["content"].partition("}{\"query\":")
             prompt["messages"][0]["content"] = head + "}"
-            output = {"result": arguments, "prompt": json.dumps(prompt)}
+            output = {"result": arguments, "prompt": json.dumps(prompt), "status":"completed"}
             await interaction.send_str(json.dumps(output))
         else:
             print("Unknown interaction type")
