@@ -70,6 +70,8 @@ function connect(ws) {
         nd = document.createElement('div');
         nd.innerHTML = "While Jarvis is thinking, here's the results from SearXNG:";
         document.getElementById('response').appendChild(nd);
+        parseSearchResults(JSON.parse(loaded.result));
+        return
       }
       parseResponse(e.data);
       if( loaded.status == "completed" ) {
