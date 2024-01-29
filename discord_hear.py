@@ -184,9 +184,11 @@ async def send_result(interaction, arguments: str, prompt:str = None):
     if(type(interaction) is not discord.Interaction and type(interaction) is not discord.Message):
         print(type(interaction))
         if(type(interaction) is aiohttp.web.WebSocketResponse):
-            out_prompt = "".join(prompt.rsplit(g_search_prompt, 1))
-            out_prompt = "".join(out_prompt.rsplit(html_search_prompt, 1))
-            output = {"result": arguments, "prompt": out_prompt}
+            ## First load the prompt
+            prompt["messages"][0]["content"] = prompt["messages"][0]["content"].replace(g_search_prompt, "").replace(html_search_prompt, "")
+            head, sep, tail = prompt["messages"][0]["content"].partition("}{\"query\":")
+            prompt["messages"][0]["content"] = head + "}"
+            output = {"result": arguments, "prompt": json.dumps(prompt)}
             await interaction.send_str(json.dumps(output))
         else:
             print("Unknown interaction type")
