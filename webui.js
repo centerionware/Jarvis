@@ -66,8 +66,12 @@ function connect(ws) {
         return
       }
       loaded = JSON.parse(e.data);
-      
-      arseResponse(e.data);
+      if( loaded.status != "completed" ) {
+        nd = document.createElement('div');
+        nd.innerHTML = "While Jarvis is thinking, here's the results from SearXNG:";
+        document.getElementById('response').appendChild(nd);
+      }
+      parseResponse(e.data);
       if( loaded.status == "completed" ) {
         history.pushState({data: e.data}, document.getElementById('q').placeholder, '?q='+document.getElementById('q').placeholder);
         document.querySelector(".query_input").value = "";
