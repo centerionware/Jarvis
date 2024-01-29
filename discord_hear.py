@@ -166,15 +166,17 @@ async def on_message(message):
     if message.content.startswith('$'):
         has_image = thinking_aid.get_url_from_message(message)
         old_messages = [messageo async for messageo in message.channel.history(limit=10, oldest_first=False)]
-        thinking.launch(message.content, has_image, message, old_messages)
-        arguments = question
+        await thinking.launch(message.content, has_image, message, old_messages)
+        # question = message.content
+        # interaction = message
+        # arguments = question
         
-        try:
-            await thinking.launch(arguments, has_image, interaction, old_messages, model)
-            await interaction.response.defer(thinking=True)
-        except Exception as e:
-            await interaction.response.defer(thinking=True)
-            await interaction.followup.send("Something broke!: " + str(e) )
+        # try:
+        #     await thinking.launch(arguments, has_image, interaction, old_messages, model)
+        #     await interaction.response.defer(thinking=True)
+        # except Exception as e:
+        #     await interaction.response.defer(thinking=True)
+        #     await interaction.followup.send("Something broke!: " + str(e) )
 
 async def send_result(interaction, arguments: str, prompt:str = None):
     print ("Sending result: " + arguments)
