@@ -139,7 +139,7 @@ async def hear():
                     response = result["message"]["content"]
                 model = result["model"]
                 formatted_response = "Model: " + model + "\n" + response
-                await send_result(elem[1],formatted_response)
+                await send_result(elem[1],formatted_response, elem[2])
             except Exception as e:
                 logging.warning("Error parsing result "  + str(e))
         thinking.queue = []
@@ -176,7 +176,7 @@ async def on_message(message):
             await interaction.response.defer(thinking=True)
             await interaction.followup.send("Something broke!: " + str(e) )
 
-async def send_result(interaction, arguments: str):
+async def send_result(interaction, arguments: str, prompt:str = None):
     print ("Sending result: " + arguments)
     messages = []
     wrapped = [arguments] #textwrap.wrap(arguments)
@@ -184,7 +184,8 @@ async def send_result(interaction, arguments: str):
     if(type(interaction) is not discord.Interaction and type(interaction) is not discord.Message):
         print(type(interaction))
         if(type(interaction) is aiohttp.web.WebSocketResponse):
-            await interaction.send_str(arguments)
+            output = {"result": arguments, "prompt": prompt}
+            await interaction.send_str(json.dumps(output))
         else:
             print("Unknown interaction type")
             #await interaction.send_str(arguments)

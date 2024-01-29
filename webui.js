@@ -25,6 +25,7 @@ var show_connect_message = false;
 function connect(ws) {
     ws = new WebSocket('wss://'+window.location.hostname+'/ws');
     ws.onopen = function() {
+      window.ws = ws;
       console.log('WebSocket Client Connected');
       if(show_connect_message) {
         document.getElementById('response').innerHTML = '<div class="error">WebSocket Client Connected</div>';
@@ -33,7 +34,23 @@ function connect(ws) {
   
     ws.onmessage = function(e) {
       // Dump the message into body->response
-      document.getElementById('response').innerHTML = e.data;
+      loaded = JSON.parse(e.data);
+      document.getElementById('response').innerHTML = loaded.result;
+      the_prompt = loaded.prompt;
+      the_prompt.results.forEach((el) => { 
+        new_div = document.createElement('div');
+        new_header = document.createElement('h3');
+        new_header.innerHTML = "Non-AI Results from SearXNG:"
+        new_div.appendChild(new_header);
+        new_link = document.createElement('a');
+        new_link.href = el.url;
+        new_link.innerHTML = el.title;
+        new_paragraph = document.createElement('p');
+        new_paragraph.innerHTML = el.content;
+        new_div.appendChild(new_link);
+        new_div.appendChild(new_paragraph);
+        document.getElementById('response').appendChild(new_div);
+      });
       history.pushState({data: e.data}, document.getElementById('q').placeholder, '?q='+document.getElementById('q').placeholder);
       toggle_query_form();
 
