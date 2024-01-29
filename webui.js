@@ -61,7 +61,7 @@ function connect(ws) {
     ws.onmessage = function(e) {
       // Dump the message into body->response
       if(e.data == "Searching..."){ 
-        document.getElementById('response').innerHTML = '<div class="error">Searching...</div>';
+        document.getElementById('response').innerHTML = '<div class="error">Searching...<img src="https://media1.tenor.com/m/TgPXdDAfIeIAAAAd/gawr-gura-gura.gif"/></div>';
         toggle_query_form();
         return
       }

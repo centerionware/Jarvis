@@ -3,6 +3,7 @@ import aiohttp
 from aiohttp import web, WSCloseCode
 import asyncio
 import nest_asyncio
+import json
 class WebUI:
     def __init__(self, drawing, thinking, searching):
         self.search_handler = searching
@@ -12,7 +13,6 @@ class WebUI:
         with(open("/app/search_html_prompt.txt", "r")) as f:
             self.prompt_from_file = f.read()
         
-
     async def http_handler(self, request):
         fcont = ""
         with open("/app/webui.html", "r") as f:
@@ -44,10 +44,9 @@ class WebUI:
                 else:
                     await ws.send_str("Searching...")
                     if(self.search_handler != None):
-                        await self.search_handler.launch(msg.data, False, ws, msg.data, "auto")
+                        await self.search_handler.launch(json.loads(msg.data)["message"], False, ws, msg.data, "auto")
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' % ws.exception())
-
         return ws
 
     def create_runner(self, ):
