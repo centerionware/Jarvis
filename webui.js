@@ -10,7 +10,8 @@ window.addEventListener('popstate', (event) => updateDisplay(event.state));
 
 // listen for load event, in case we navigate away and then go back
 window.addEventListener('load', () => updateDisplay(history.state), false);
-
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+  
 function updateDisplay(state) {
   if (state) {
     parseResponse( state.data );
@@ -20,7 +21,7 @@ function updateDisplay(state) {
 }
 function parseResponse(data) {
     loaded = JSON.parse(data);
-    document.getElementById('response').innerHTML = loaded.result;
+    document.getElementById('response').innerHTML = marked.parse(loaded.result);
     the_prompt = JSON.parse(loaded.prompt);
     content = JSON.parse(the_prompt.messages[0].content)
     parseSearchResults(content);
