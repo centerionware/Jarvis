@@ -100,9 +100,19 @@ window.ws = connect(window.ws);
 // Form has one input field named 'q', send it via websocket and prevent default form action
 
 var websocket_submit = function() {
-    
+   /* https://stackoverflow.com/questions/901115/how-can-i-get-query-string-values-in-javascript */
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+      get: (searchParams, prop) => searchParams.get(prop),
+    });
+    // Get the value of "some_key" in eg "https://example.com/?some_key=some_value"
+    let requested_model = params.model; // "some_value"
+    model = "auto"
+    if(requested_model) {
+      model = requested_model
+    }
     window.ws.send(JSON.stringify({
-        'message': document.getElementById('q').value
+        'message': document.getElementById('q').value,
+        "model": model
     }));
     document.getElementById('q').placeholder = document.getElementById('q').value;
     document.getElementById('q').value = '';
