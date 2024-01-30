@@ -146,12 +146,7 @@ class ThinkingAid:
                 
         except:
             pass
-        if(any_urls is True):
-            #print("A url is true!")
-            #print(json.dumps(args))
-            args["model"] = "llava"
-        else:
-            args["model"] = "mistral"            
+                   
         #loop each message in formatted_messages but in reverse
         for message in formatted_messages[::-1]:
             #Push message to the front of the list
