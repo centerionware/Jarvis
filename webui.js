@@ -10,7 +10,6 @@ window.addEventListener('popstate', (event) => updateDisplay(event.state));
 
 // listen for load event, in case we navigate away and then go back
 window.addEventListener('load', () => updateDisplay(history.state), false);
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
   
 function updateDisplay(state) {
   if (state) {
