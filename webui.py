@@ -45,10 +45,12 @@ class WebUI:
                     await ws.send_str("Searching...")
                     if(self.search_handler != None):
                         r_data = json.loads(msg.data)
+                        with open("test.txt", "a") as f:
+                            f.write(str(r_data) + "\n")
                         model = "auto"
                         if ( "model" in r_data and r_data["model"] != None):
                             model = r_data["model"]
-                        await self.search_handler.launch(r_data["message"], False, ws, msg.data, model)
+                        await self.search_handler.launch(r_data["message"], False, ws, r_data["message"], model)
             elif msg.type == aiohttp.WSMsgType.ERROR:
                 print('ws connection closed with exception %s' % ws.exception())
         return ws

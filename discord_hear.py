@@ -108,7 +108,9 @@ async def hear():
             model = "auto"
             if(len(elem) == 4):
                 model = elem[3]
-            await thinking.launch(elem[0] + elem[0] + elem[0] + d_prompt, False, elem[1], [], model, d_prompt)
+                with open("test.txt", "a") as f:
+                    f.write("Model: " + model + "\n")
+            await thinking.launch(elem[0] + d_prompt, False, elem[1], [], model, d_prompt)
             
             # await thinking.launch(elem[0] + "\nsummerize the information. Use high quality results from the data provided. focus on the initial query. Include links to relevant sources based on the query and the data provided.", False, elem[1], [], "auto")
             # This should be json search results, 
