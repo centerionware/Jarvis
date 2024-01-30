@@ -60,7 +60,7 @@ class SearchingAid:
         pass
     def look_for_forget_in_messages(self, old_messages):
         pass
-    async def launch(self, command, url, interaction, search_query, model):
+    async def launch(self, command, url, interaction, search_query, model="auto"):
         print("Launching Search")
         client_user = self.client
         self.command = command
@@ -72,7 +72,7 @@ class SearchingAid:
         }
         time.sleep(0.01)
         print("Launching Search..")
-        await self.MC.search_request(interaction, args)
+        await self.MC.search_request(interaction, args, model)
         print("Launched Search.")
 
     def kill_pids(self):

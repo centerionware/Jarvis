@@ -170,7 +170,10 @@ class JarvisMC:
                         raise Exception("Can't find interaction in queue. Dropping response.")
                         return
                     retry_count += 1
-                output_item.queue.append([json[1], queue[2], json[2]])
+                if(len(queue) == 4):
+                    output_item.queue.append([json[1], queue[2], json[2], queue[3]])
+                else:
+                    output_item.queue.append([json[1], queue[2], json[2]])
                 # Response is now available with the jarvis discord interaction object here so can add a response back to drawing_aid
         await self.queue_pusher()
         pass
@@ -203,12 +206,12 @@ class JarvisMC:
             raise Exception("No text agents available")
         id = str(uuid.uuid4())
         await self.queuer(available_agent, json_prompt, interaction, "TextRequest")
-    async def search_request(self, interaction, json_prompt):
+    async def search_request(self, interaction, json_prompt, model="auto"):
         available_agent = self.get_search_agent()
         if(available_agent is None):
             raise Exception("No text agents available")
         id = str(uuid.uuid4())
-        available_agent[2].put([id, json_prompt, interaction])
+        available_agent[2].put([id, json_prompt, interaction, model])
         await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
     async def image_request(self, interaction, json_prompt):
         available_agent = self.get_image_agent()

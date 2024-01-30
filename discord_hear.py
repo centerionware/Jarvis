@@ -105,7 +105,10 @@ async def hear():
                 d_prompt = html_search_prompt
             output = {"result": elem[0], "status": "quick-results"}
             await elem[1].send_str(json.dumps(output))
-            await thinking.launch(elem[0] + elem[0] + elem[0] + d_prompt, False, elem[1], [], "auto", d_prompt)
+            model = "auto"
+            if(len(elem) == 4):
+                model = elem[3]
+            await thinking.launch(elem[0] + elem[0] + elem[0] + d_prompt, False, elem[1], [], model, d_prompt)
             
             # await thinking.launch(elem[0] + "\nsummerize the information. Use high quality results from the data provided. focus on the initial query. Include links to relevant sources based on the query and the data provided.", False, elem[1], [], "auto")
             # This should be json search results, 
