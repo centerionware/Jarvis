@@ -124,7 +124,7 @@ class ThinkingAid:
             }
         else:
             s_model = "mistral"
-            if( s_model != "auto"):
+            if( model != "auto"):
                 s_model = model
             args ={
                 "model": s_model,

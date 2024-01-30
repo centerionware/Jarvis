@@ -45,8 +45,8 @@ class WebUI:
                     await ws.send_str("Searching...")
                     if(self.search_handler != None):
                         r_data = json.loads(msg.data)
-                        with open("test.txt", "a") as f:
-                            f.write(str(r_data) + "\n")
+                        # with open("test.txt", "a") as f:
+                        #     f.write(str(r_data) + "\n")
                         model = "auto"
                         if ( "model" in r_data and r_data["model"] != None):
                             model = r_data["model"]
