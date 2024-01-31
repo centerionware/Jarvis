@@ -195,8 +195,9 @@ async def send_result(interaction, arguments: str, prompt:str = None):
         if(type(interaction) is aiohttp.web.WebSocketResponse):
             ## First load the prompt
             prompt["messages"][0]["content"] = prompt["messages"][0]["content"].replace(g_search_prompt, "").replace(html_search_prompt, "")
-            head, sep, tail = prompt["messages"][0]["content"].partition("}{\"query\":")
-            prompt["messages"][0]["content"] = head + "}"
+            if "}{\"query\":" in prompt["messages"][0]["content"]:
+                head, sep, tail = prompt["messages"][0]["content"].partition("}{\"query\":")
+                prompt["messages"][0]["content"] = head + "}"
             output = {"result": arguments, "prompt": json.dumps(prompt), "status":"completed"}
             await interaction.send_str(json.dumps(output))
         else:
