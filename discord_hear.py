@@ -101,10 +101,10 @@ async def hear():
             print ("Sending a search result.")
             # await send_result(elem[1], elem[0]) 
             d_prompt = g_search_prompt #  "summerize the information without adding your own thoughts. Don't mention the names of search engines unless it's relevant to the query. Use high quality results from the data provided. focus on the initial query. Provide links to relevant information with a brief description about the link from the data provided - do not make up any information that's not provided. Focus on the query. Do not provide links not closely associated to the data or not from the data. Always include link "
+            output = {"result": elem[0], "status": "quick-results"}
             if(type(elem[1]) is aiohttp.web.WebSocketResponse):
                 d_prompt = html_search_prompt
-            output = {"result": elem[0], "status": "quick-results"}
-            await elem[1].send_str(json.dumps(output))
+                await elem[1].send_str(json.dumps(output))
             model = "auto"
             if(len(elem) == 4):
                 model = elem[3]
