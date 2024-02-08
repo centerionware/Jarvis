@@ -276,8 +276,8 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
         for i in range(image_count):
             await drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=False)
         await interaction.response.defer(thinking=True)
-        if(overlay_text != "" and batch_size != 1):
-            await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+        if(overlay_text != "" and use_batch != False):
+            await interaction.followup.send("Warning: overlay_text is not supported with use_batch = false")
     except Exception as e:
         await interaction.response.defer(thinking=True)
         await interaction.followup.send("Something broke!: " + str(e) )
@@ -308,8 +308,8 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
         for i in range(image_count):
             await drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
         await interaction.response.defer(thinking=True)
-        if(overlay_text != "" and batch_size != 1):
-            await interaction.followup.send("Warning: overlay_text is not supported with batch_size != 1")
+        if(overlay_text != "" and use_batch != 1):
+            await interaction.followup.send("Warning: overlay_text is not supported with use_batch=false")
     except Exception as e:
         await interaction.response.defer(thinking=True)
         await interaction.followup.send("Something broke!: " + str(e) )
