@@ -260,7 +260,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
     if(overlay_text != ""):
         if(overlay_color[0] != "#"):
             overlay_color = "#" + overlay_color
-            use_batch=False
+        use_batch=False
         #Check if overlay_color is not in the format #XXXXXX where x's are probably hex.
         if(len(overlay_color) != 7):
             overlay_color = "#000000"
