@@ -128,7 +128,12 @@ async def hear():
                 images = []
                 im_num = 0
                 for image_data in nodes[image]:
-                    images.append(discord.File(io.BytesIO(base64.b64decode(image_data.encode('utf-8'))), elem[1].user.global_name+"_0xJarvis_image_batch_"+str(im_num)+".png"))
+                    username = "default"
+                    try:
+                        username = elem[1].user.global_name
+                    except Exception as E:
+                        pass
+                    images.append(discord.File(io.BytesIO(base64.b64decode(image_data.encode('utf-8'))), username+"_0xJarvis_image_batch_"+str(im_num)+".png"))
                     im_num = im_num + 1
                 await send_image_result(elem[1], images)
         drawing.queue = []
