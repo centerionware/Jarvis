@@ -292,7 +292,7 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
     if(overlay_text != ""):
         if(overlay_color[0] != "#"):
             overlay_color = "#" + overlay_color
-            use_batch=False
+        use_batch=False
         #Check if overlay_color is not in the format #XXXXXX where x's are probably hex.
         if(len(overlay_color) != 7):
             overlay_color = "#000000"
@@ -308,7 +308,7 @@ async def nt_image(interaction,*, description:str, negative_prompt:str = "", noi
         for i in range(image_count):
             await drawing.launch(arguments, interaction, old_messages, negative_prompt, noise_seed+i, cfg, overlay_text, overlay_color, overlay_x, overlay_y, overlay_alignment, use_textlora,use_batch, use_nt=True)
         await interaction.response.defer(thinking=True)
-        if(overlay_text != "" and use_batch != 1):
+        if(overlay_text != "" and use_batch != False):
             await interaction.followup.send("Warning: overlay_text is not supported with use_batch=false")
     except Exception as e:
         await interaction.response.defer(thinking=True)
