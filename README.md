@@ -10,6 +10,9 @@ Agent branch. This branch provides an agent that will connect back to the main b
 * Ollama is running in WSL in docker with LiteLLM (Currently not used) with Jarvis (the discord.py based bot) on RX3080 with an AMD 2700x cpu on windows 11.
 * ComfyUI runs based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui to work on legacy AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image is ages.) 
 
+# Text Overlay
+Move text_box.png into comfyui's input folder for the text overlay to work.
+
 **New Main File:**
 * discord_hear.py - provides basic discord echo bot.
 * Jarvis_Agent.py - connects back to the Main Controller branch and provides an agent to do inference.
@@ -34,7 +37,8 @@ If you're running your own jarvis main node controller
 ## Launching example:
 ```sh
 docker login registry.gitlab.centerionware.com
-docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -v '/mnt/jarvis:/mnt/jarvis' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/comfyui/input:/app/ComfyUI/input' -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -v '/var/run/docker.sock:/var/run/docker.sock' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+
 ```
 
 Note: If you wish to add searxng, docker in docker can be used. Simply mount /var/run/docker.sock to the container and the image will launch searxng, and connect the containers on a private network so the bot can use the api. this could be considered a security risk. Should probably consider migrating to podman in docker for the searxng, but this is already in place so whatever. Also ensure `-v /mnt/jarvis:/mnt/jarvis` is used so the pre-configured searxng configuration file can be used which enables json results (should be the only change ever to the default).
