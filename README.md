@@ -7,6 +7,9 @@ This image _does not_ do inference of any kind. It's the core routing and pipewo
 
 Ollama and Comfyui discord bot. Chat, image inspection, and image generation.
 
+# Shoutouts
+-- epilepsy - You fucking rock my friend. Thank you for helping me test this on the eve of release when nobody else was there.
+
 # 0xJarvis
 * Ollama is running in WSL in docker with LiteLLM (Currently not used) with Jarvis (the discord.py based bot) on RX3080 with an AMD 2700x cpu on windows 11.
 * ComfyUI runs based on the (internal) RX570 ComfyUI deployment branch, which enables comfyui to work on legacy AMD gpus on Linux hosts. It's been tested on a proxmox host on an HPE DL580gen9 with an AMD RX570. (It works but I don't recommend, 2s to process a single image is ages.) 
