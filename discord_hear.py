@@ -284,7 +284,7 @@ async def image(interaction,*, description:str, negative_prompt:str = "", noise_
     #await interaction.followup.send("Thinking...")
 
 @tree.command(name = "nt_image", description = "Prompt Jarvis to create an image")
-async def nt_image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 1.0, image_count:int = 1,
+async def nt_image(interaction,*, description:str, negative_prompt:str = "", noise_seed:int = 10301411218912, cfg:float = 7.0, image_count:int = 1,
                 overlay_text:str="", overlay_color:str="#000000", overlay_x:int=19, overlay_y:int=0, overlay_alignment:str="left", use_textlora:bool=False, use_batch:bool=True):
     global drawing
     if(image_count > 5):
