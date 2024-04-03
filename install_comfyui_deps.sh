@@ -15,7 +15,7 @@ apt install wget
 
 wget https://huggingface.co/HarroweD/HarrlogosXL/resolve/main/Harrlogos_v2.0.safetensors -O /app/ComfyUI/models/loras/Harrlogos_v2.0.safetensors
 
-wget https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors?download=true -O comfyui/models/checkpoints/sd_xl_base_1.0_0.9vae.safetensors
+wget https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0_0.9vae.safetensors?download=true -O /app/ComfyUI/models/checkpoints/sd_xl_base_1.0_0.9vae.safetensors
 wget https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0/resolve/main/sd_xl_refiner_1.0_0.9vae.safetensors?download=true -O /app/ComfyUI/models/checkpoints/sd_xl_refiner_1.0_0.9vae.safetensors
 wget https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors?download=true -O /app/ComfyUI/models/checkpoints/SDXL-TURBO/sd_xl_turbo_1.0_fp16.safetensors
 
