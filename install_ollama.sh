@@ -1,4 +1,5 @@
 #!/bin/bash
+
 curl https://ollama.ai/install.sh | sh
 #/usr/local/bin/ollama serve &
 #sleep 5s
