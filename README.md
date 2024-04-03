@@ -27,7 +27,7 @@ Move text_box.png into comfyui's input folder for the text overlay to work.
 ## Notes:
 
 Adding search capabilities. searxng can be used to provide an Agent with the capabilities to search the internet across many search engines.
-
+searxng needs `-v /mnt:/mnt`
 ## Environment Variables and defaults
 These can be changed in case you'd prefer to use another comfyui or ollama server
 * COMFYUI_URL = "localhost:8188"
@@ -37,7 +37,7 @@ If you're running your own jarvis main node controller
 ## Launching example:
 ```sh
 docker login registry.gitlab.centerionware.com
-docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/comfyui/input:/app/ComfyUI/input' -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -v '/var/run/docker.sock:/var/run/docker.sock' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v /mnt:/mnt -v '/home/deadc0de/comfyui/input:/app/ComfyUI/input' -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -v '/var/run/docker.sock:/var/run/docker.sock' -p 8188:8188 -p 8000:8000 registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
 
 ```
 
@@ -46,11 +46,18 @@ Note: If you wish to add searxng, docker in docker can be used. Simply mount /va
 
 ```sh
 docker login registry.gitlab.centerionware.com
-docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -p 8188:8188 -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+docker run --restart always --name jarvis_agent_nvidia -d --gpus all -v /mnt:/mnt -v '/home/deadc0de/jarvis:/root/.ollama/models' -v '/home/deadc0de/comfyui/custom_nodes:/app/ComfyUI/custom_nodes' -v '/home/deadc0de/comfyui/models:/app/ComfyUI/models' -p 8188:8188 -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
 
 ```
 LiteLLM OpenAI compatible proxy should now be available on the port 8000, it is insecure by default.
 ComfyUI should be available on port 8188, it also is insecure. 
+
+## Podman with CDI
+
+```sh
+sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+podman run --restart always --name jarvis_agent_nvidia -d --gpus all -e DISABLE_IMAGE=true -v '/var/cache/models:/root/.ollama/models' -p 8188:8188 -p 8000:8000 -v /mnt:/mnt -v /var/run/podman/podman.sock:/var/run/docker.sock  --device=nvidia.com/gpu=all registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent-nvidia
+```
 
 ## Adding ollama-webui
 ```sh

@@ -77,7 +77,7 @@ def search_threaded_query(TR_OBJ, args):
     queue = TR_OBJ.queue
     remote_url = 'http://searxng:8080/search'
     print("Querying searxng")
-    output = requests.post(remote_url, data={"q":args}).content.decode('utf-8')
+    output = requests.post(remote_url, data={"q":args,"format":"json"}).content.decode('utf-8')
     print("received output from searxng")
     queue.put([id, output, args])
 

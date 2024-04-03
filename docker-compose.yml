@@ -22,7 +22,7 @@ services:
     networks:
       - searxng
     volumes:
-      - /mnt/jarvis/searxng:/etc/searxng:rw
+      - /mnt/jarvis/etc/searxng:/etc/searxng:rw
     environment:
       - SEARXNG_BASE_URL=http://searxng/
     cap_drop:
