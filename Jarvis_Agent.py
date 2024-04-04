@@ -22,6 +22,8 @@ class JarvisAgent:
             self.capabilities.append("TextRequest")
         if( config.get("DISABLE_IMAGE","") == ""):
             self.capabilities.append("ImageRequest")
+            if( config.get("DISABLE_NTIMAGE","") == ""):
+                self.capabilities.append("BetterImageRequest")
         if( config.get("DISABLE_SEARCH","") == ""):
             if os.path.exists('/var/run/docker.sock'):
                 self.capabilities.append("SearchRequest")
