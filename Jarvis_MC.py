@@ -109,7 +109,7 @@ class JarvisMC:
         client_id = websocket
         for cap in json["capabilities"]:
             if(cap == "ImageRequest"):
-                self.image_agents.append([client_id, json, queue.Queue()])
+                self.image_agents.append([client_id, json, queue.Queue(), {"nt_image":1 if "BetterImateRequest" in json["capabilities"] else 0 }])
             elif(cap == "TextRequest"):
                 self.text_agents.append([client_id, json, queue.Queue()])
             elif(cap == "SearchRequest"):
@@ -186,16 +186,36 @@ class JarvisMC:
     async def text_response(self, json, websocket):
         await self.handle_response(json, websocket, self.text_agents, self.thinking)
         pass
-    def get_a_queue(self, agents):
+    def get_a_queue(self, agents, flags={}):
         smallest_queue = None
         for agent in agents:
             if(smallest_queue is None):
-                smallest_queue = agent
+                if(len (flags) != 0):
+                    if( len(agent) > 3):
+                        agent_flags = agent[3]
+                        all_in = True
+                        for flag_name, flag_value in agent_flags.items() :
+                            if not (flag_name in flags and flags.get(flag_name) == flag_value):
+                                all_in = False
+                        if all_in == True:
+                            smallest_queue = agent
+                else:
+                    smallest_queue = agent
             elif(smallest_queue[2].qsize() > agent[2].qsize()):
-                smallest_queue = agent
+                if(len(flags) != 0):
+                    if( len(agent) > 3):
+                        agent_flags = agent[3]
+                        all_in = True
+                        for flag_name, flag_value in agent_flags.items() :
+                            if not (flag_name in flags and flags.get(flag_name) == flag_value):
+                                all_in = False
+                        if all_in == True:
+                            smallest_queue = agent
+                else:
+                    smallest_queue = agent
         return smallest_queue
-    def get_image_agent(self):
-        return self.get_a_queue(self.image_agents)
+    def get_image_agent(self, flags):
+        return self.get_a_queue(self.image_agents, flags)
     def get_text_agent(self):
         return self.get_a_queue(self.text_agents)
     def get_search_agent(self):
@@ -213,8 +233,8 @@ class JarvisMC:
         id = str(uuid.uuid4())
         available_agent[2].put([id, json_prompt, interaction, model])
         await available_agent[0].send(json.dumps({"type": "SearchRequest", "payload": {"id":id,"prompt":json_prompt}}))
-    async def image_request(self, interaction, json_prompt):
-        available_agent = self.get_image_agent()
+    async def image_request(self, interaction, json_prompt, flags={}):
+        available_agent = self.get_image_agent(flags)
         if(available_agent is None):
             raise Exception("No image agents available")
         await self.queuer(available_agent, json_prompt, interaction, "ImageRequest")

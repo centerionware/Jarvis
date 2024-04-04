@@ -96,7 +96,7 @@ class DrawingAid:
                 client_prompt[node]["inputs"]["start_y"] = overlay_y
                 client_prompt[node]["inputs"]["alignment"] = overlay_alignment
             #10301411218912
-        await self.MC.image_request(interaction, client_prompt)
+        await self.MC.image_request(interaction, client_prompt, {"nt_image": 1 if use_nt is True else 0})
         #stdout_thread = threading.Thread(target=enqueue_output, args=(self.actual_queue, interaction, self.url, client_prompt))#json.loads(client_prompt)))
         #stdout_thread.daemon = True
         #stdout_thread.start()
