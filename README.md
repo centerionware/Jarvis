@@ -34,6 +34,13 @@ These can be changed in case you'd prefer to use another comfyui or ollama serve
 * OLLAMA_URL = "http://localhost:11434/api/generate"
 If you're running your own jarvis main node controller
 * MNC_URL = "wss://register.jarvis.ai.centerionware.com" (Eg for localhost only: `ws://localhost/` )
+
+* DISABLE_TEXT
+* DISABLE_IMAGE
+* DISABLE_NTIMAGE
+* DISABLE_SEARCH
+* Set any of the above to anything but empty disable the corresponding feature
+
 ## Launching example:
 ```sh
 docker login registry.gitlab.centerionware.com
