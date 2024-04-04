@@ -193,11 +193,11 @@ class JarvisMC:
                 if(len (flags) != 0):
                     if( len(agent) > 3):
                         agent_flags = agent[3]
-                        all_in = True
+                        all_flags_are_matching = True
                         for flag_name, flag_value in agent_flags.items() :
                             if not (flag_name in flags and flags.get(flag_name) == flag_value):
-                                all_in = False
-                        if all_in == True:
+                                all_flags_are_matching = False
+                        if all_flags_are_matching == True:
                             smallest_queue = agent
                 else:
                     smallest_queue = agent
@@ -205,11 +205,11 @@ class JarvisMC:
                 if(len(flags) != 0):
                     if( len(agent) > 3):
                         agent_flags = agent[3]
-                        all_in = True
+                        all_flags_are_matching = True
                         for flag_name, flag_value in agent_flags.items() :
                             if not (flag_name in flags and flags.get(flag_name) == flag_value):
-                                all_in = False
-                        if all_in == True:
+                                all_flags_are_matching = False
+                        if all_flags_are_matching == True:
                             smallest_queue = agent
                 else:
                     smallest_queue = agent
