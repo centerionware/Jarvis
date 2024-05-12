@@ -17,15 +17,16 @@ cp /app/etc /mnt/jarvis/ -r
 if [ ! -e /var/run/docker.sock ]; then
     echo "File /var/run/docker.sock does not exist. Not launching Searxng."
 else
-    docker-compose --file /app/docker-compose.yml up -d
-    #!/bin/bash
-
     # Find the Docker container using the specific image
     output=$(docker ps | grep "registry.gitlab.centerionware.com/public-projects/jarvis:InferenceAgent")
 
     # Extract the container ID
     container_id=$(echo $output | cut -d ' ' -f 1)
 
+    docker-compose --file /app/docker-compose.yml down
+    docker network disconnect app_searxng ${container_id} || true
+    docker network rm app_searxng || true
+    docker-compose --file /app/docker-compose.yml up -d
     docker network connect app_searxng ${container_id}
 fi
 # Print the container ID
