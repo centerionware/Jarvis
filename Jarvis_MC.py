@@ -109,7 +109,7 @@ class JarvisMC:
         client_id = websocket
         for cap in json["capabilities"]:
             if(cap == "ImageRequest"):
-                self.image_agents.append([client_id, json, queue.Queue(), {"nt_image":1 if "BetterImateRequest" in json["capabilities"] else 0 }])
+                self.image_agents.append([client_id, json, queue.Queue(), {"nt_image":1 if "BetterImageRequest" in json["capabilities"] else 0 }])
             elif(cap == "TextRequest"):
                 self.text_agents.append([client_id, json, queue.Queue()])
             elif(cap == "SearchRequest"):
