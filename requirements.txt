@@ -6,4 +6,3 @@ proxy
 websocket-client
 python-socketio[client]
 websockets[client]
-libgl1
