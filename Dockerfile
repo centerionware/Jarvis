@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.10-slim
 COPY . /app/
 
 run chmod +x /app/start_script.sh && chmod +x /app/cron_script.sh
