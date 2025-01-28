@@ -123,7 +123,7 @@ class ThinkingAid:
                 ]
             }
         else:
-            s_model = "mistral"
+            s_model = "deepseek-r1:8b"
             if( model != "auto"):
                 s_model = model
             args ={
