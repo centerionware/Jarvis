@@ -1,5 +1,11 @@
 # Jarvis
 
+Jarvis started when AI was booming. Its_MS suggested an AI that can listen to you like a google home/alexa and respond. 
+That's what the main branch of this repository is. 
+
+I eventually turned Jarvis into a discord bot with /ask, /image, and /nt_image functionality using a distributed network of agents that provide features via ollama and comfyui. It was designed to run many agents on seperate systems that connect back to a single controller that acts as a middleware between the agents and discord.
+
+
 Created in collaboration between Deadcode and Its_MS
 
 
